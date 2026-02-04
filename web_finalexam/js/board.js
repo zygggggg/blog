@@ -1,5 +1,5 @@
-// 留言板功能 - 使用后端 API
-const API_BASE_URL = 'http://localhost:8080/api/board';
+// 留言板功能 - Railway 后端地址
+const API_BASE_URL = 'https://blog-production-24dd.up.railway.app/api/board';
 
 let messages = [];
 

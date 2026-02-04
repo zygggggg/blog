@@ -1,5 +1,5 @@
-// API 配置 - 请修改为你的后端服务器地址
-const API_BASE_URL = 'http://localhost:8080/api/album';
+// API 配置 - Railway 后端地址
+const API_BASE_URL = 'https://blog-production-24dd.up.railway.app/api/album';
 
 // 全局变量
 let currentPage = 1;
