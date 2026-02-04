@@ -114,7 +114,7 @@ app.post('/api/album/upload', upload.single('file'), async (req, res) => {
     console.log(`📤 Upload image request received, filename: ${file.originalname}`);
 
     // 生成文件 URL（本地访问路径）
-    const fileUrl = `http://localhost:${PORT}/uploads/${file.filename}`;
+    const fileUrl = `https://blog-production-24dd.up.railway.app/uploads/${file.filename}`;
 
     // 保存到数据库
     const [insertResult] = await pool.execute(
