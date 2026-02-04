@@ -21,7 +21,9 @@
       "Bash(curl:*)",
       "Bash(ls:*)",
       "Bash(grep:*)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git rm:*)",
+      "Bash(git branch:*)"
     ]
   }
 }
