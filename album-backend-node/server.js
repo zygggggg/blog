@@ -9,6 +9,15 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+console.log('🔧 Server version: 2.0 - Debug mode');
+console.log('🔍 Environment variables check:', {
+  MYSQLHOST: process.env.MYSQLHOST ? 'exists' : 'missing',
+  MYSQLPORT: process.env.MYSQLPORT ? 'exists' : 'missing',
+  MYSQLUSER: process.env.MYSQLUSER ? 'exists' : 'missing',
+  MYSQLPASSWORD: process.env.MYSQLPASSWORD ? 'exists' : 'missing',
+  MYSQLDATABASE: process.env.MYSQLDATABASE ? 'exists' : 'missing'
+});
+
 // 确保上传目录存在
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
 (async () => {
