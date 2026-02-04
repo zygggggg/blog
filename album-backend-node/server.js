@@ -81,6 +81,7 @@ const pool = mysql.createPool({
 // 测试数据库连接
 (async () => {
   try {
+    console.log('hello');
     console.log('🔍 Database config:', {
       host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
       port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
@@ -161,6 +162,7 @@ app.post('/api/album/upload', upload.single('file'), async (req, res) => {
 // 获取图片列表（分页）
 app.get('/api/album/list', async (req, res) => {
   try {
+    console.log('hello');
     const page = parseInt(req.query.page) || 1;
     const size = parseInt(req.query.size) || 20;
     const offset = (page - 1) * size;
