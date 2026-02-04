@@ -72,12 +72,19 @@ const pool = mysql.createPool({
 // 测试数据库连接
 (async () => {
   try {
+    console.log('🔍 Database config:', {
+      host: process.env.MYSQLHOST || process.env.DB_HOST || 'localhost',
+      port: process.env.MYSQLPORT || process.env.DB_PORT || 3306,
+      user: process.env.MYSQLUSER || process.env.DB_USER || 'root',
+      database: process.env.MYSQLDATABASE || process.env.DB_NAME || 'album_db',
+      hasPassword: !!(process.env.MYSQLPASSWORD || process.env.DB_PASSWORD)
+    });
     const connection = await pool.getConnection();
     console.log('✅ Database connected successfully');
     connection.release();
   } catch (err) {
     console.error('❌ Database connection failed:', err.message);
-    console.error('💡 请检查 .env 文件中的数据库配置');
+    console.error('Full error:', err);
   }
 })();
 
