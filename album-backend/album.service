@@ -1,0 +1,19 @@
+[Unit]
+Description=Album Backend Service
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/album
+ExecStart=/usr/bin/java -jar /opt/album/album-backend-1.0.0.jar
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# 环境变量（可选）
+Environment="JAVA_OPTS=-Xms512m -Xmx1024m"
+
+[Install]
+WantedBy=multi-user.target
