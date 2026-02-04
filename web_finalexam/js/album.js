@@ -1,0 +1,270 @@
+// API 配置 - 请修改为你的后端服务器地址
+const API_BASE_URL = 'http://localhost:8080/api/album';
+
+// 全局变量
+let currentPage = 1;
+let pageSize = 20;
+
+// 页面加载
+window.onload = function() {
+    // 加载图片列表
+    loadImages();
+
+    // 初始化上传功能
+    initUpload();
+};
+
+// 从后端加载图片列表
+async function loadImages() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/list?page=${currentPage}&size=${pageSize}`);
+        const result = await response.json();
+
+        if (result.code === 200) {
+            displayImages(result.data.list);
+        } else {
+            console.error('加载图片失败:', result.message);
+            displayImages([]);
+        }
+    } catch (error) {
+        console.error('加载图片失败:', error);
+        displayImages([]);
+    }
+}
+
+// 显示图片网格
+function displayImages(images) {
+    const banner = document.getElementById('banner');
+    banner.innerHTML = '';
+
+    if (images.length === 0) {
+        banner.innerHTML = '<div class="empty-message">暂无图片，点击右上角上传按钮添加图片</div>';
+        return;
+    }
+
+    // 按上传时间倒序排列（新的在前面）
+    images.sort((a, b) => new Date(b.uploadTime) - new Date(a.uploadTime));
+
+    images.forEach((image, index) => {
+        const imageCard = document.createElement('div');
+        imageCard.className = 'image-card';
+        imageCard.setAttribute('data-id', image.id);
+
+        imageCard.innerHTML = `
+            <div class="image-wrapper">
+                <img src="${image.fileUrl}" alt="${image.description || '图片'}" loading="lazy">
+                <div class="image-overlay">
+                    <div class="image-info">
+                        <p class="image-desc">${image.description || '无描述'}</p>
+                        <p class="image-date">${formatDate(image.uploadTime)}</p>
+                    </div>
+                    <div class="image-actions">
+                        <button class="btn-view" onclick="viewImage('${image.fileUrl}', '${image.description || ''}')">
+                            👁️ 查看
+                        </button>
+                        <button class="btn-delete" onclick="deleteImage(${image.id})">
+                            🗑️ 删除
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        banner.appendChild(imageCard);
+    });
+}
+
+// 格式化日期
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+// 查看大图
+function viewImage(url, description) {
+    const modal = document.createElement('div');
+    modal.className = 'view-modal';
+    modal.innerHTML = `
+        <div class="view-modal-content">
+            <span class="view-close">&times;</span>
+            <img src="${url}" alt="${description}">
+            <p class="view-description">${description || '无描述'}</p>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // 关闭按钮
+    const closeBtn = modal.querySelector('.view-close');
+    closeBtn.onclick = function() {
+        document.body.removeChild(modal);
+    };
+
+    // 点击背景关闭
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            document.body.removeChild(modal);
+        }
+    };
+}
+
+// 删除图片
+async function deleteImage(id) {
+    if (!confirm('确定要删除这张图片吗？')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/delete/${id}`, {
+            method: 'DELETE'
+        });
+
+        const result = await response.json();
+
+        if (result.code === 200) {
+            alert('删除成功！');
+            // 重新加载图片列表
+            loadImages();
+        } else {
+            alert('删除失败: ' + result.message);
+        }
+    } catch (error) {
+        alert('删除失败: ' + error.message);
+    }
+}
+
+// 初始化上传功能
+function initUpload() {
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const uploadModal = document.getElementById('uploadModal');
+    const closeBtn = document.querySelector('.close');
+    const confirmUpload = document.getElementById('confirmUpload');
+    const previewArea = document.getElementById('previewArea');
+    const descInput = document.getElementById('descInput');
+    const uploadProgress = document.getElementById('uploadProgress');
+    let selectedFile = null;
+
+    // 点击上传按钮
+    uploadBtn.onclick = function() {
+        fileInput.click();
+    };
+
+    // 选择文件
+    fileInput.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                return;
+            }
+
+            // 验证文件大小（10MB）
+            if (file.size > 10 * 1024 * 1024) {
+                alert('图片大小不能超过10MB！');
+                return;
+            }
+
+            selectedFile = file;
+
+            // 预览图片
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewArea.innerHTML = `<img src="${e.target.result}" alt="预览">`;
+                previewArea.classList.remove('empty');
+            };
+            reader.readAsDataURL(file);
+
+            // 显示弹窗
+            uploadModal.style.display = 'block';
+            descInput.value = '';
+            uploadProgress.textContent = '';
+        }
+    };
+
+    // 关闭弹窗
+    closeBtn.onclick = function() {
+        uploadModal.style.display = 'none';
+        selectedFile = null;
+        previewArea.innerHTML = '';
+        previewArea.classList.add('empty');
+        fileInput.value = '';
+    };
+
+    // 点击弹窗外部关闭
+    window.onclick = function(event) {
+        if (event.target == uploadModal) {
+            uploadModal.style.display = 'none';
+            selectedFile = null;
+            previewArea.innerHTML = '';
+            previewArea.classList.add('empty');
+            fileInput.value = '';
+        }
+    };
+
+    // 确认上传
+    confirmUpload.onclick = async function() {
+        if (!selectedFile) {
+            alert('请先选择图片！');
+            return;
+        }
+
+        const description = descInput.value.trim();
+
+        // 禁用按钮
+        confirmUpload.disabled = true;
+        uploadProgress.textContent = '上传中...';
+
+        try {
+            await uploadImage(selectedFile, description);
+            uploadProgress.textContent = '✅ 上传成功！';
+
+            // 延迟关闭弹窗并刷新列表
+            setTimeout(() => {
+                uploadModal.style.display = 'none';
+                selectedFile = null;
+                previewArea.innerHTML = '';
+                previewArea.classList.add('empty');
+                confirmUpload.disabled = false;
+                fileInput.value = '';
+
+                // 重新加载图片列表
+                loadImages();
+            }, 1000);
+
+        } catch (error) {
+            uploadProgress.textContent = '❌ 上传失败: ' + error.message;
+            confirmUpload.disabled = false;
+        }
+    };
+
+    previewArea.classList.add('empty');
+}
+
+// 上传图片到后端
+async function uploadImage(file, description) {
+    const formData = new FormData();
+    formData.append('file', file);
+    if (description) {
+        formData.append('description', description);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.code !== 200) {
+        throw new Error(result.message || '上传失败');
+    }
+
+    return result.data;
+}

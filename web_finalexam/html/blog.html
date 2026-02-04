@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - 与角色对话</title>
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/body.css">
+    <link rel="stylesheet" href="../css/blog.css">
+</head>
+<body>
+    <nav>
+        <div class="navtitle"><strong>WZY</strong>|MY PROFILE</div>
+        <a href="home.html">HOME</a>
+        <a href="about.html">ABOUT</a>
+        <a href="blog.html">CHAT</a>
+        <a href="album.html">ALBUM</a>
+        <a href="join.html">BOARD</a>
+        <div class="navanim blog"></div>
+        <div class="none"></div>
+    </nav>
+
+    <div class="chat-container">
+        <!-- 聊天头部 -->
+        <div class="chat-header">
+            <div class="chat-avatar">
+                <img src="../image/homepic1.png" alt="角色头像">
+            </div>
+            <div class="chat-info">
+                <h2>WZY 助手</h2>
+                <p class="status">在线</p>
+            </div>
+            <button id="clearBtn" class="clear-btn">🗑️ 清空对话</button>
+        </div>
+
+        <!-- 聊天消息区域 -->
+        <div class="chat-messages" id="chatMessages">
+            <div class="welcome-message">
+                <p>👋 你好！我是 WZY 助手，有什么可以帮助你的吗？</p>
+            </div>
+        </div>
+
+        <!-- 输入区域 -->
+        <div class="chat-input-container">
+            <textarea
+                id="messageInput"
+                class="chat-input"
+                placeholder="输入消息..."
+                rows="1"
+            ></textarea>
+            <button id="sendBtn" class="send-btn">
+                <span>发送</span>
+                <span class="send-icon">📤</span>
+            </button>
+        </div>
+    </div>
+
+    <footer class="foot">
+        <p>@2025-2026  |  BY:WZY</p>
+        <p>网页版权归WZY所有</p>
+        <p>无限进步 Infinite Progress</p>
+    </footer>
+
+    <script src="../js/chat.js"></script>
+</body>
+</html>

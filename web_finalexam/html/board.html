@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>留言板 - Board</title>
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/body.css">
+    <link rel="stylesheet" href="../css/join.css">
+</head>
+<body>
+    <nav>
+        <div class="navtitle"><strong>WZY</strong>|MY PROFILE</div>
+        <a href="home.html">HOME</a>
+        <a href="about.html">ABOUT</a>
+        <a href="blog.html">CHAT</a>
+        <a href="album.html">ALBUM</a>
+        <a href="join.html">BOARD</a>
+        <div class="navanim join"></div>
+        <div class="none"></div>
+    </nav>
+
+    <div class="board-container">
+        <!-- 留言板头部 -->
+        <div class="board-header">
+            <h1>留言板</h1>
+            <p>留下你的足迹</p>
+        </div>
+
+        <!-- 发表留言区域 -->
+        <div class="post-message-section">
+            <h2>发表留言</h2>
+            <div class="post-form">
+                <input type="text" id="nicknameInput" placeholder="你的昵称" maxlength="20">
+                <textarea id="messageInput" placeholder="写下你的留言..." rows="4" maxlength="500"></textarea>
+                <div class="post-actions">
+                    <span class="char-count">0/500</span>
+                    <button id="postBtn" class="post-btn">发送</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 留言列表 -->
+        <div class="messages-section">
+            <div class="messages-header">
+                <h2>所有留言</h2>
+                <button id="clearAllBtn" class="clear-all-btn">清空留言</button>
+            </div>
+            <div id="messagesList" class="messages-list">
+                <div class="empty-message">
+                    <p>还没有留言，快来抢沙发吧！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="foot">
+        <p>@2025-2026  |  BY:WZY</p>
+        <p>网页版权归WZY所有</p>
+        <p>无限进步 Infinite Progress</p>
+    </footer>
+
+    <script src="../js/board.js"></script>
+</body>
+</html>
