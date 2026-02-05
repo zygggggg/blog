@@ -125,13 +125,14 @@ function renderMessages() {
 
     messagesList.innerHTML = '';
 
-    messages.forEach(message => {
+    messages.forEach((message, index) => {
         const messageCard = document.createElement('div');
         messageCard.className = 'message-card';
         messageCard.setAttribute('data-id', message.id);
 
-        // 获取昵称首字母作为头像
-        const initial = message.nickname.charAt(0).toUpperCase();
+        // 使用 homepic 图片作为头像，循环使用 1-4
+        const avatarNum = (index % 4) + 1;
+        const avatarUrl = `../image/homepic${avatarNum}.png`;
 
         // 格式化时间
         const time = formatTime(message.createTime);
@@ -139,7 +140,7 @@ function renderMessages() {
         messageCard.innerHTML = `
             <div class="message-header">
                 <div class="message-author">
-                    <div class="author-avatar">${initial}</div>
+                    <img src="${avatarUrl}" alt="avatar" class="author-avatar" />
                     <span class="author-name">${escapeHtml(message.nickname)}</span>
                 </div>
                 <span class="message-time">${time}</span>
