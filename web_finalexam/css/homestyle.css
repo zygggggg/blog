@@ -8,7 +8,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
 }
 
 .particle {
@@ -45,7 +45,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 1;
+    z-index: 2;
 }
 
 .note {
@@ -78,7 +78,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    z-index: 2;
+    z-index: 10;
 }
 
 .hero-content {
@@ -220,7 +220,7 @@
     overflow-x: hidden;
     height: 100vh;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 .sec{
@@ -228,7 +228,7 @@
     width: 100vw;
     scroll-snap-align: start;
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 .pt{

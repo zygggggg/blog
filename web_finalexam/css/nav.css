@@ -60,26 +60,26 @@ nav .navanim{
 }
 nav .home,a:nth-child(2):hover~.navanim{
     width: 120px;
-    left: 535px;
+    left: calc(30% + 50px);
 }
 
 nav .about,a:nth-child(3):hover~.navanim{
     width: 120px;
-    left: 670px;
+    left: calc(30% + 50px + 120px + 15px);
 }
 
 nav .blog,a:nth-child(4):hover~.navanim{
     width: 120px;
-    left: 810px;
+    left: calc(30% + 50px + 240px + 30px);
 }
 
 nav .album,a:nth-child(5):hover~.navanim{
     width: 120px;
-    left: 950px;
+    left: calc(30% + 50px + 360px + 45px);
 }
 nav .join,a:nth-child(6):hover~.navanim{
     width: 120px;
-    left: 1085px;
+    left: calc(30% + 50px + 480px + 60px);
 }
 nav .none{
     width: 20%;
