@@ -338,30 +338,7 @@
                 });
             }, 100);
 
-            // 监听滚动事件，切换背景
-            const mainContainer = document.querySelector('.main');
-            const cardsSection = document.getElementById('cards-section');
-            let currentSection = 'hero';
-
-            mainContainer.addEventListener('scroll', function() {
-                const scrollTop = mainContainer.scrollTop;
-                const viewportHeight = window.innerHeight;
-
-                // 判断是否滚动到第二页
-                if (scrollTop > viewportHeight * 0.5 && currentSection === 'hero') {
-                    // 随机选择一张图片
-                    if (images && images.length > 0) {
-                        const randomImage = images[Math.floor(Math.random() * images.length)];
-                        applyBackground(randomImage);
-                    }
-                    currentSection = 'cards';
-                } else if (scrollTop < viewportHeight * 0.5 && currentSection === 'cards') {
-                    // 返回第一页，恢复保存的背景
-                    const savedBg = localStorage.getItem('selectedBackground') || 'IMG_E5416.JPG';
-                    applyBackground(savedBg);
-                    currentSection = 'hero';
-                }
-            });
+            // 监听滚动事件已移除 - 背景保持统一，不再随机切换
         };
     </script>
 </body>

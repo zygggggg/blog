@@ -309,8 +309,9 @@ nav {
     width: 250px;
     float: left;
     margin: 150px 0px 0px 105px;
-    background: rgba(219, 235, 241,0.8);
-    box-shadow: 0 0 15px rgb(59, 73, 95);
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
     border-radius: 15px;
     overflow: hidden;
     scroll-snap-align: start;
@@ -325,16 +326,16 @@ nav {
     overflow: hidden;
 }
 .part1 .img{
-    background-image: url("../image/homepic1.png");
+    background-image: url("../image/fll/home_down_four/home_down_fll1.png");
 }
 .part2 .img{
-    background-image: url("../image/homepic2.png");
+    background-image: url("../image/fll/home_down_four/home_down_fll2.png");
 }
 .part3 .img{
-    background-image: url("../image/homepic3.png");
+    background-image: url("../image/fll/home_down_four/home_down_fll3.png");
 }
 .part4 .img{
-    background-image: url("../image/homepic4.png");
+    background-image: url("../image/fll/home_down_four/home_down_fll4.png");
 }
 
 .pt .img{
@@ -363,7 +364,7 @@ nav {
 .pt .txt h1{
     text-align: center;
     font-size: 3em;
-    color: rgb(28, 44, 68);
+    color: white;
     height: 30px;
     line-height: 30px;
 }
@@ -371,7 +372,7 @@ nav {
 .pt .txt p{
     margin-top: -2px;
     word-wrap: break-word;
-    color: rgb(114, 182, 202);
+    color: white;
 }
 @keyframes load{
     0%{
