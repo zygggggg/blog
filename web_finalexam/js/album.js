@@ -5,6 +5,11 @@ const API_BASE_URL = 'https://blog-production-24dd.up.railway.app/api/album';
 let currentPage = 1;
 let pageSize = 20;
 
+// 缓存配置
+const CACHE_KEY = 'album_images_cache';
+const CACHE_EXPIRY_KEY = 'album_images_cache_expiry';
+const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存（相册更新频繁，缓存时间短一些）
+
 // 页面加载
 window.onload = function() {
     // 加载图片列表
@@ -15,12 +20,34 @@ window.onload = function() {
 };
 
 // 从后端加载图片列表
-async function loadImages() {
+async function loadImages(forceRefresh = false) {
     try {
+        // 检查缓存（除非强制刷新）
+        if (!forceRefresh) {
+            const cachedData = localStorage.getItem(CACHE_KEY);
+            const cacheExpiry = localStorage.getItem(CACHE_EXPIRY_KEY);
+            const now = Date.now();
+
+            if (cachedData && cacheExpiry && now < parseInt(cacheExpiry)) {
+                console.log('✅ 使用缓存的相册图片列表');
+                const cachedResult = JSON.parse(cachedData);
+                displayImages(cachedResult.list);
+                return;
+            }
+        }
+
+        console.log('📡 正在从 API 获取相册图片列表...');
         const response = await fetch(`${API_BASE_URL}/list?page=${currentPage}&size=${pageSize}`);
         const result = await response.json();
 
         if (result.code === 200) {
+            console.log('✅ 成功加载相册图片列表');
+
+            // 缓存数据
+            const now = Date.now();
+            localStorage.setItem(CACHE_KEY, JSON.stringify(result.data));
+            localStorage.setItem(CACHE_EXPIRY_KEY, (now + CACHE_DURATION).toString());
+
             displayImages(result.data.list);
         } else {
             console.error('加载图片失败:', result.message);
@@ -128,8 +155,11 @@ async function deleteImage(id) {
 
         if (result.code === 200) {
             alert('删除成功！');
-            // 重新加载图片列表
-            loadImages();
+            // 清除缓存
+            localStorage.removeItem(CACHE_KEY);
+            localStorage.removeItem(CACHE_EXPIRY_KEY);
+            // 重新加载图片列表（强制刷新）
+            loadImages(true);
         } else {
             alert('删除失败: ' + result.message);
         }
@@ -234,8 +264,11 @@ function initUpload() {
                 confirmUpload.disabled = false;
                 fileInput.value = '';
 
-                // 重新加载图片列表
-                loadImages();
+                // 清除缓存
+                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem(CACHE_EXPIRY_KEY);
+                // 重新加载图片列表（强制刷新）
+                loadImages(true);
             }, 1000);
 
         } catch (error) {
