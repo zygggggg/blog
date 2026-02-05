@@ -163,9 +163,12 @@ app.get('/api/backgrounds', async (req, res) => {
           return res.json(successResponse([]));
         }
 
-        // 生成带签名的 URL（有效期 1 小时）
+        // 生成公共 URL（更快）
+        const bucketName = process.env.OSS_BUCKET;
+        const region = process.env.OSS_REGION || 'oss-rg-china-mainland';
         const images = result.objects.map(obj => {
-          const url = ossClient.signatureUrl(obj.name, { expires: 3600 });
+          // 使用公共 URL 格式（如果 bucket 是公共读）
+          const url = `https://${bucketName}.${region}.aliyuncs.com/${obj.name}`;
           return {
             name: obj.name.replace('image/fll/system_image/', ''),
             url: url
