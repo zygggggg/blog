@@ -4,19 +4,34 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs').promises;
+const OSS = require('ali-oss');
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-console.log('🔧 Server version: 2.0 - Debug mode');
-console.log('🔍 Environment variables check:', {
-  MYSQLHOST: process.env.MYSQLHOST ? 'exists' : 'missing',
-  MYSQLPORT: process.env.MYSQLPORT ? 'exists' : 'missing',
-  MYSQLUSER: process.env.MYSQLUSER ? 'exists' : 'missing',
-  MYSQLPASSWORD: process.env.MYSQLPASSWORD ? 'exists' : 'missing',
-  MYSQLDATABASE: process.env.MYSQLDATABASE ? 'exists' : 'missing'
-});
+// 检查是否使用 OSS
+const USE_OSS = !!(process.env.OSS_ACCESS_KEY_ID && process.env.OSS_ACCESS_KEY_SECRET && process.env.OSS_BUCKET);
+
+console.log('🔧 Server version: 3.0 - OSS Support');
+console.log('💾 Storage Mode:', USE_OSS ? 'Aliyun OSS' : 'Local Disk');
+
+// 初始化 OSS 客户端
+let ossClient = null;
+if (USE_OSS) {
+  try {
+    ossClient = new OSS({
+      region: process.env.OSS_REGION || 'oss-rg-china-mainland',
+      accessKeyId: process.env.OSS_ACCESS_KEY_ID,
+      accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
+      bucket: process.env.OSS_BUCKET
+    });
+    console.log('✅ OSS client initialized');
+    console.log('📦 Bucket:', process.env.OSS_BUCKET);
+  } catch (err) {
+    console.error('❌ OSS initialization failed:', err.message);
+  }
+}
 
 // 确保上传目录存在
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
@@ -34,11 +49,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 静态文件服务 - 提供图片访问
-app.use('/uploads', express.static(UPLOAD_DIR));
+// 静态文件服务 - 仅在本地存储模式下使用
+if (!USE_OSS) {
+  app.use('/uploads', express.static(UPLOAD_DIR));
+}
 
-// 配置文件上传（磁盘存储）
-const storage = multer.diskStorage({
+// 配置文件上传
+const storage = USE_OSS ? multer.memoryStorage() : multer.diskStorage({
   destination: async (req, file, cb) => {
     cb(null, UPLOAD_DIR);
   },
@@ -115,7 +132,7 @@ const errorResponse = (message = 'error', code = 500) => ({
 
 // 健康检查
 app.get('/api/album/health', (req, res) => {
-  res.json(successResponse('Album service is running (Local Storage Mode)'));
+  res.json(successResponse(`Album service is running (${USE_OSS ? 'OSS' : 'Local'} Storage Mode)`));
 });
 
 // 上传图片
@@ -130,20 +147,41 @@ app.post('/api/album/upload', upload.single('file'), async (req, res) => {
 
     console.log(`📤 Upload image request received, filename: ${file.originalname}`);
 
-    // 生成文件 URL（本地访问路径）
-    const fileUrl = `https://blog-production-24dd.up.railway.app/uploads/${file.filename}`;
+    let fileUrl, fileName;
+
+    if (USE_OSS) {
+      // OSS 存储模式
+      const timestamp = Date.now();
+      const randomStr = Math.random().toString(36).substring(2, 8);
+      const ext = path.extname(file.originalname);
+      fileName = `album/${timestamp}_${randomStr}${ext}`;
+
+      try {
+        // 上传到 OSS
+        const result = await ossClient.put(fileName, file.buffer);
+        fileUrl = result.url;
+        console.log(`✅ Image uploaded to OSS: ${fileUrl}`);
+      } catch (ossErr) {
+        console.error('❌ OSS upload failed:', ossErr);
+        return res.status(500).json(errorResponse('上传到 OSS 失败: ' + ossErr.message, 500));
+      }
+    } else {
+      // 本地存储模式
+      fileName = file.filename;
+      fileUrl = `https://blog-production-24dd.up.railway.app/uploads/${file.filename}`;
+    }
 
     // 保存到数据库
     const [insertResult] = await pool.execute(
       `INSERT INTO album_image
        (file_name, original_name, file_url, file_size, file_type, description)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [file.filename, file.originalname, fileUrl, file.size, file.mimetype, description]
+      [fileName, file.originalname, fileUrl, file.size, file.mimetype, description]
     );
 
     const responseData = {
       id: insertResult.insertId,
-      fileName: file.filename,
+      fileName: fileName,
       originalName: file.originalname,
       fileUrl: fileUrl,
       fileSize: file.size,
@@ -220,15 +258,26 @@ app.delete('/api/album/delete/:id', async (req, res) => {
     }
 
     const fileName = rows[0].file_name;
-    const filePath = path.join(UPLOAD_DIR, fileName);
 
-    // 删除本地文件
-    try {
-      await fs.unlink(filePath);
-      console.log(`✅ File deleted from disk: ${fileName}`);
-    } catch (fileError) {
-      console.warn('⚠️  File delete warning:', fileError.message);
-      // 即使文件删除失败，也继续删除数据库记录
+    if (USE_OSS) {
+      // OSS 存储模式 - 删除 OSS 文件
+      try {
+        await ossClient.delete(fileName);
+        console.log(`✅ File deleted from OSS: ${fileName}`);
+      } catch (ossError) {
+        console.warn('⚠️  OSS delete warning:', ossError.message);
+        // 即使 OSS 删除失败，也继续删除数据库记录
+      }
+    } else {
+      // 本地存储模式 - 删除本地文件
+      const filePath = path.join(UPLOAD_DIR, fileName);
+      try {
+        await fs.unlink(filePath);
+        console.log(`✅ File deleted from disk: ${fileName}`);
+      } catch (fileError) {
+        console.warn('⚠️  File delete warning:', fileError.message);
+        // 即使文件删除失败，也继续删除数据库记录
+      }
     }
 
     // 软删除（更新数据库）
