@@ -88,11 +88,11 @@
 }
 
 .hero-title {
-    font-size: 4em;
+    font-size: 5em;
     font-weight: bold;
     margin-bottom: 10px;
     letter-spacing: 8px;
-    background: linear-gradient(135deg, #FF80CC 0%, #9D25B7 100%);
+    background: linear-gradient(135deg, #FF6B9D 0%, #C9379D 50%, #9D25B7 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
