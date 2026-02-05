@@ -65,7 +65,8 @@
         // 应用保存的背景
         window.addEventListener('DOMContentLoaded', function() {
             const savedBg = localStorage.getItem('selectedBackground') || 'IMG_E5416.JPG';
-            const bgUrl = `../image/fll/system_image/${savedBg}`;
+            // 如果是完整 URL，直接使用；否则使用本地路径
+            const bgUrl = savedBg.startsWith('http') ? savedBg : `../image/fll/system_image/${savedBg}`;
             document.body.style.backgroundImage = `url('${bgUrl}')`;
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundPosition = 'center';

@@ -133,28 +133,79 @@
         }
 
         // 加载图片列表
-        function loadImages() {
-            const imageGrid = document.getElementById('imageGrid');
-            const images = [
-                'IMG_E5416.JPG', 'IMG_E5417.JPG', 'IMG_E5419.JPG',
-                'IMG_E5421.JPG', 'IMG_E5422.JPG', 'IMG_E5423.JPG',
+        async function loadImages() {
+            return new Promise(async (resolve) => {
+                try {
+                    // 从后端 API 获取 OSS 背景图片列表
+                    const API_URL = 'https://blog-production-24dd.up.railway.app/api/backgrounds';
+
+                    console.log('📡 正在从 API 获取背景图片列表...');
+                    const response = await fetch(API_URL);
+
+                    if (!response.ok) {
+                        throw new Error(`API 请求失败: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.code === 200 && result.data && result.data.length > 0) {
+                        const images = result.data;
+                        console.log('✅ 成功从 OSS 加载背景列表');
+                        console.log('📋 图片数量:', images.length);
+
+                        const imageGrid = document.getElementById('imageGrid');
+                        images.forEach((img, index) => {
+                            const item = document.createElement('div');
+                            item.className = 'image-item';
+                            item.innerHTML = `<img src="${img.url}" alt="背景${index + 1}">`;
+                            item.onclick = () => selectImage(img.url, item);
+                            imageGrid.appendChild(item);
+                        });
+
+                        // 返回 URL 数组
+                        resolve(images.map(img => img.url));
+                    } else {
+                        console.warn('⚠️  API 返回空列表，使用备用图片');
+                        loadFallbackImages(resolve);
+                    }
+                } catch (err) {
+                    console.error('❌ 从 API 加载失败:', err.message);
+                    console.warn('⚠️  使用硬编码的备用图片列表');
+                    loadFallbackImages(resolve);
+                }
+            });
+        }
+
+        // 回退到硬编码列表
+        function loadFallbackImages(resolve) {
+            console.warn('⚠️ 使用硬编码的备用图片列表');
+
+            const fallbackImages = [
+                'IMG_E5416.JPG', 'IMG_E5417.jpeg', 'IMG_E5419.jpeg',
+                'IMG_E5421-upscaled.png', 'IMG_E5422.JPG', 'IMG_E5423.JPG',
                 'IMG_E5424.JPG', 'IMG_E5426.JPG', 'IMG_E5427.JPG',
                 'IMG_E5429.JPG', 'IMG_E5430.JPG', 'IMG_E5431.JPG',
                 'IMG_E5432.JPG', 'IMG_E5433.JPG', 'IMG_E5434.JPG'
             ];
 
-            images.forEach((img, index) => {
+            console.log('📋 备用图片数量:', fallbackImages.length);
+
+            const imageGrid = document.getElementById('imageGrid');
+            fallbackImages.forEach((img, index) => {
                 const item = document.createElement('div');
                 item.className = 'image-item';
                 item.innerHTML = `<img src="../image/fll/system_image/${img}" alt="背景${index + 1}">`;
                 item.onclick = () => selectImage(img, item);
                 imageGrid.appendChild(item);
             });
+
+            resolve(fallbackImages);
         }
 
         // 应用背景
-        function applyBackground(imageName) {
-            const bgUrl = `../image/fll/system_image/${imageName}`;
+        function applyBackground(imageUrl) {
+            // 如果是完整 URL，直接使用；否则使用本地路径
+            const bgUrl = imageUrl.startsWith('http') ? imageUrl : `../image/fll/system_image/${imageUrl}`;
             document.body.style.backgroundImage = `url('${bgUrl}')`;
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundPosition = 'center';
@@ -162,7 +213,7 @@
         }
 
         // 选择图片
-        function selectImage(imageName, element) {
+        function selectImage(imageUrl, element) {
             // 移除其他选中状态
             document.querySelectorAll('.image-item').forEach(item => {
                 item.classList.remove('selected');
@@ -170,9 +221,9 @@
             // 添加选中状态
             element.classList.add('selected');
             // 更改背景
-            applyBackground(imageName);
+            applyBackground(imageUrl);
             // 保存到本地存储
-            localStorage.setItem('selectedBackground', imageName);
+            localStorage.setItem('selectedBackground', imageUrl);
         }
 
         // 打开选择器
@@ -186,10 +237,12 @@
         }
 
         // 页面加载时初始化
-        window.onload = function() {
+        window.onload = async function() {
             createParticles();
             createNotes();
-            loadImages();
+
+            // 加载图片列表
+            const images = await loadImages();
 
             // 恢复上次选择的背景，如果没有则使用默认背景
             const savedBg = localStorage.getItem('selectedBackground') || 'IMG_E5416.JPG';
@@ -199,7 +252,11 @@
             setTimeout(() => {
                 const items = document.querySelectorAll('.image-item img');
                 items.forEach(img => {
-                    if (img.src.includes(savedBg)) {
+                    const imgSrc = img.src;
+                    const savedBgUrl = savedBg.startsWith('http') ? savedBg : `../image/fll/system_image/${savedBg}`;
+
+                    // 比较 URL（处理可能的查询参数）
+                    if (imgSrc.split('?')[0] === savedBgUrl.split('?')[0] || imgSrc.includes(savedBg)) {
                         img.parentElement.classList.add('selected');
                     }
                 });
@@ -209,13 +266,6 @@
             const mainContainer = document.querySelector('.main');
             const cardsSection = document.getElementById('cards-section');
             let currentSection = 'hero';
-            const images = [
-                'IMG_E5416.JPG', 'IMG_E5417.JPG', 'IMG_E5419.JPG',
-                'IMG_E5421.JPG', 'IMG_E5422.JPG', 'IMG_E5423.JPG',
-                'IMG_E5424.JPG', 'IMG_E5426.JPG', 'IMG_E5427.JPG',
-                'IMG_E5429.JPG', 'IMG_E5430.JPG', 'IMG_E5431.JPG',
-                'IMG_E5432.JPG', 'IMG_E5433.JPG', 'IMG_E5434.JPG'
-            ];
 
             mainContainer.addEventListener('scroll', function() {
                 const scrollTop = mainContainer.scrollTop;
@@ -224,8 +274,10 @@
                 // 判断是否滚动到第二页
                 if (scrollTop > viewportHeight * 0.5 && currentSection === 'hero') {
                     // 随机选择一张图片
-                    const randomImage = images[Math.floor(Math.random() * images.length)];
-                    applyBackground(randomImage);
+                    if (images && images.length > 0) {
+                        const randomImage = images[Math.floor(Math.random() * images.length)];
+                        applyBackground(randomImage);
+                    }
                     currentSection = 'cards';
                 } else if (scrollTop < viewportHeight * 0.5 && currentSection === 'cards') {
                     // 返回第一页，恢复保存的背景

@@ -145,6 +145,50 @@ app.get('/api/album/health', (req, res) => {
   res.json(successResponse(`Album service is running (${USE_OSS ? 'OSS' : 'Local'} Storage Mode)`));
 });
 
+// 获取背景图片列表
+app.get('/api/backgrounds', async (req, res) => {
+  try {
+    console.log('📋 获取背景图片列表请求');
+
+    if (USE_OSS) {
+      // OSS 模式：从 OSS 获取背景图片列表
+      try {
+        const result = await ossClient.list({
+          prefix: 'image/fll/system_image/',
+          'max-keys': 100
+        });
+
+        if (!result.objects || result.objects.length === 0) {
+          console.log('⚠️  OSS 中没有找到背景图片');
+          return res.json(successResponse([]));
+        }
+
+        // 生成带签名的 URL（有效期 1 小时）
+        const images = result.objects.map(obj => {
+          const url = ossClient.signatureUrl(obj.name, { expires: 3600 });
+          return {
+            name: obj.name.replace('image/fll/system_image/', ''),
+            url: url
+          };
+        });
+
+        console.log(`✅ 从 OSS 获取到 ${images.length} 张背景图片`);
+        res.json(successResponse(images));
+      } catch (ossErr) {
+        console.error('❌ OSS 获取失败:', ossErr);
+        return res.status(500).json(errorResponse('从 OSS 获取背景图片失败: ' + ossErr.message, 500));
+      }
+    } else {
+      // 本地模式：返回空数组或从配置文件读取
+      console.log('⚠️  本地存储模式，返回空列表');
+      res.json(successResponse([]));
+    }
+  } catch (error) {
+    console.error('❌ 获取背景图片列表错误:', error);
+    res.status(500).json(errorResponse('获取背景图片列表失败: ' + error.message, 500));
+  }
+});
+
 // 上传图片
 app.post('/api/album/upload', upload.single('file'), async (req, res) => {
   try {

@@ -25,7 +25,15 @@
       "Bash(git rm:*)",
       "Bash(git branch:*)",
       "Bash(git config:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(tree:*)",
+      "Bash(git ls-tree:*)",
+      "Bash(test:*)",
+      "Bash(start web_finalexam/html/home.html)",
+      "Bash(git mv:*)",
+      "Bash(MY PROFILE\" with \"PHROLOVA\" across all pages\n- Increase transparency for better frosted glass effect\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(start web_finalexam/html/information.html)",
+      "Bash(git remote get-url:*)"
     ]
   }
 }
