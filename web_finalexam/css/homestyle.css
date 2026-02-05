@@ -92,6 +92,10 @@
     font-weight: bold;
     margin-bottom: 10px;
     letter-spacing: 8px;
+    background: linear-gradient(135deg, #FF80CC 0%, #9D25B7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .hero-subtitle {
