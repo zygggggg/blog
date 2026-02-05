@@ -65,21 +65,21 @@ nav .home,a:nth-child(2):hover~.navanim{
 
 nav .about,a:nth-child(3):hover~.navanim{
     width: 120px;
-    left: calc(30% + 90px + 120px + 25px);
+    left: calc(30% + 90px + 120px + 30px);
 }
 
 nav .blog,a:nth-child(4):hover~.navanim{
     width: 120px;
-    left: calc(30% + 90px + 240px + 50px);
+    left: calc(30% + 90px + 240px + 60px);
 }
 
 nav .album,a:nth-child(5):hover~.navanim{
     width: 120px;
-    left: calc(30% + 90px + 360px + 75px);
+    left: calc(30% + 90px + 360px + 90px);
 }
 nav .join,a:nth-child(6):hover~.navanim{
     width: 120px;
-    left: calc(30% + 90px + 480px + 100px);
+    left: calc(30% + 90px + 480px + 120px);
 }
 nav .none{
     width: 20%;
