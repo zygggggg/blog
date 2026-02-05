@@ -33,12 +33,12 @@
         <div class="hero-content">
             <h1 class="hero-title">弗洛洛</h1>
             <p class="hero-subtitle">PHROLOVA · 挽歌 永不落幕</p>
-            <div class="divider">
+            <button class="divider-btn" id="dividerBtn" onclick="toggleWallpaperView()">
                 <span>•</span>
                 <span>+</span>
                 <span>+</span>
                 <span>•</span>
-            </div>
+            </button>
             <p class="hero-quote">我曾梦见，与你亲密无间<br>醒来发现，你我形同陌路</p>
             <button class="hero-btn" onclick="openImageSelector()">选择背景图片 ◇</button>
         </div>
@@ -279,6 +279,37 @@
         // 关闭选择器
         function closeImageSelector() {
             document.getElementById('imageSelector').style.display = 'none';
+        }
+
+        // 切换壁纸查看模式
+        let isWallpaperMode = false;
+        function toggleWallpaperView() {
+            const heroContent = document.querySelector('.hero-content');
+            const nav = document.querySelector('nav');
+            const cardsSection = document.getElementById('cards-section');
+            const footer = document.querySelector('.foot');
+
+            isWallpaperMode = !isWallpaperMode;
+
+            if (isWallpaperMode) {
+                // 进入壁纸模式：隐藏所有内容
+                heroContent.classList.add('wallpaper-mode');
+                nav.style.transform = 'translateY(-100%)';
+                nav.style.opacity = '0';
+                cardsSection.style.transform = 'translateY(100vh)';
+                cardsSection.style.opacity = '0';
+                footer.style.transform = 'translateY(100%)';
+                footer.style.opacity = '0';
+            } else {
+                // 退出壁纸模式：恢复所有内容
+                heroContent.classList.remove('wallpaper-mode');
+                nav.style.transform = 'translateY(0)';
+                nav.style.opacity = '1';
+                cardsSection.style.transform = 'translateY(0)';
+                cardsSection.style.opacity = '1';
+                footer.style.transform = 'translateY(0)';
+                footer.style.opacity = '1';
+            }
         }
 
         // 页面加载时初始化
