@@ -10,6 +10,14 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+// 调试：检查 OSS 环境变量
+console.log('🔍 OSS Environment Variables:', {
+  OSS_ACCESS_KEY_ID: process.env.OSS_ACCESS_KEY_ID ? 'exists' : 'missing',
+  OSS_ACCESS_KEY_SECRET: process.env.OSS_ACCESS_KEY_SECRET ? 'exists' : 'missing',
+  OSS_BUCKET: process.env.OSS_BUCKET || 'missing',
+  OSS_REGION: process.env.OSS_REGION || 'missing'
+});
+
 // 检查是否使用 OSS
 const USE_OSS = !!(process.env.OSS_ACCESS_KEY_ID && process.env.OSS_ACCESS_KEY_SECRET && process.env.OSS_BUCKET);
 
