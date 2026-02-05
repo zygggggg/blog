@@ -32,7 +32,9 @@ if (USE_OSS) {
       region: process.env.OSS_REGION || 'oss-rg-china-mainland',
       accessKeyId: process.env.OSS_ACCESS_KEY_ID,
       accessKeySecret: process.env.OSS_ACCESS_KEY_SECRET,
-      bucket: process.env.OSS_BUCKET
+      bucket: process.env.OSS_BUCKET,
+      timeout: 300000, // 增加超时时间到 5 分钟（300秒）
+      secure: true // 使用 HTTPS
     });
     console.log('✅ OSS client initialized');
     console.log('📦 Bucket:', process.env.OSS_BUCKET);
