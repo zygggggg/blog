@@ -132,10 +132,29 @@
             }
         }
 
+        // 图片缓存
+        let cachedImages = null;
+        const CACHE_KEY = 'oss_background_images';
+        const CACHE_EXPIRY_KEY = 'oss_background_images_expiry';
+        const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24小时
+
         // 加载图片列表
         async function loadImages() {
             return new Promise(async (resolve) => {
                 try {
+                    // 检查缓存
+                    const cachedData = localStorage.getItem(CACHE_KEY);
+                    const cacheExpiry = localStorage.getItem(CACHE_EXPIRY_KEY);
+                    const now = Date.now();
+
+                    if (cachedData && cacheExpiry && now < parseInt(cacheExpiry)) {
+                        console.log('✅ 使用缓存的背景图片列表');
+                        const images = JSON.parse(cachedData);
+                        renderImageGrid(images);
+                        resolve(images.map(img => img.url));
+                        return;
+                    }
+
                     // 从后端 API 获取 OSS 背景图片列表
                     const API_URL = 'https://blog-production-24dd.up.railway.app/api/backgrounds';
 
@@ -153,14 +172,11 @@
                         console.log('✅ 成功从 OSS 加载背景列表');
                         console.log('📋 图片数量:', images.length);
 
-                        const imageGrid = document.getElementById('imageGrid');
-                        images.forEach((img, index) => {
-                            const item = document.createElement('div');
-                            item.className = 'image-item';
-                            item.innerHTML = `<img src="${img.url}" alt="背景${index + 1}">`;
-                            item.onclick = () => selectImage(img.url, item);
-                            imageGrid.appendChild(item);
-                        });
+                        // 缓存数据
+                        localStorage.setItem(CACHE_KEY, JSON.stringify(images));
+                        localStorage.setItem(CACHE_EXPIRY_KEY, (now + CACHE_DURATION).toString());
+
+                        renderImageGrid(images);
 
                         // 返回 URL 数组
                         resolve(images.map(img => img.url));
@@ -176,25 +192,54 @@
             });
         }
 
+        // 渲染图片网格
+        function renderImageGrid(images) {
+            const imageGrid = document.getElementById('imageGrid');
+            imageGrid.innerHTML = ''; // 清空现有内容
+
+            images.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-item';
+
+                // 使用懒加载
+                const imgElement = document.createElement('img');
+                imgElement.loading = 'lazy';
+                imgElement.src = img.url;
+                imgElement.alt = `背景${index + 1}`;
+
+                item.appendChild(imgElement);
+                item.onclick = () => selectImage(img.url, item);
+                imageGrid.appendChild(item);
+            });
+        }
+
         // 回退到硬编码列表
         function loadFallbackImages(resolve) {
             console.warn('⚠️ 使用硬编码的备用图片列表');
 
             const fallbackImages = [
                 'IMG_E5416.JPG', 'IMG_E5417.jpeg', 'IMG_E5419.jpeg',
-                'IMG_E5421-upscaled.png', 'IMG_E5422.JPG', 'IMG_E5423.JPG',
-                'IMG_E5424.JPG', 'IMG_E5426.JPG', 'IMG_E5427.JPG',
-                'IMG_E5429.JPG', 'IMG_E5430.JPG', 'IMG_E5431.JPG',
-                'IMG_E5432.JPG', 'IMG_E5433.JPG', 'IMG_E5434.JPG'
+                'IMG_E5421-upscaled.png', 'IMG_E5422.JPG', 'IMG_E5423-upscaled.png',
+                'IMG_E5424-upscaled.png', 'IMG_E5426-upscaled.png', 'IMG_E5427-upscaled.png',
+                'IMG_E5429-upscaled.png', 'IMG_E5430-upscaled.png', 'IMG_E5431-upscaled.png',
+                'IMG_E5432-upscaled.png', 'IMG_E5433-upscaled.png', 'IMG_E5434-upscaled.png'
             ];
 
             console.log('📋 备用图片数量:', fallbackImages.length);
 
             const imageGrid = document.getElementById('imageGrid');
+            imageGrid.innerHTML = ''; // 清空现有内容
+
             fallbackImages.forEach((img, index) => {
                 const item = document.createElement('div');
                 item.className = 'image-item';
-                item.innerHTML = `<img src="../image/fll/system_image/${img}" alt="背景${index + 1}">`;
+
+                const imgElement = document.createElement('img');
+                imgElement.loading = 'lazy';
+                imgElement.src = `../image/fll/system_image/${img}`;
+                imgElement.alt = `背景${index + 1}`;
+
+                item.appendChild(imgElement);
                 item.onclick = () => selectImage(img, item);
                 imageGrid.appendChild(item);
             });
