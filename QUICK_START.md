@@ -384,3 +384,116 @@ mvn clean install -U
 ---
 
 **祝使用愉快！🎉**
+
+---
+
+# Coze 聊天功能接入快速开始
+
+## 🎯 三步完成接入
+
+### 第一步：获取 Coze 凭证
+
+1. 访问 https://www.coze.cn/
+2. 创建一个新的 Bot
+3. 复制 **Bot ID** 和 **API Token**
+
+### 第二步：配置后端
+
+1. 进入后端目录：
+```bash
+cd album-backend-node
+```
+
+2. 复制配置文件（如果还没有 .env 文件）：
+```bash
+cp .env.example .env
+```
+
+3. 编辑 `.env` 文件，填入你的 Coze 凭证：
+```env
+# Coze AI 聊天配置
+COZE_API_URL=https://api.coze.cn/v1/conversation/create
+COZE_BOT_ID=你的Bot_ID
+COZE_API_TOKEN=你的API_Token
+```
+
+### 第三步：启动服务
+
+1. 安装依赖（首次运行）：
+```bash
+npm install
+```
+
+2. 启动后端服务：
+```bash
+npm start
+```
+
+3. 打开浏览器，访问：
+```
+file:///你的路径/web_finalexam/html/chat.html
+```
+
+## ✅ 完成！
+
+现在你可以在聊天页面与 AI 对话了！
+
+## 📖 详细文档
+
+查看完整配置说明：[web_finalexam/COZE_SETUP.md](web_finalexam/COZE_SETUP.md)
+
+## 🔧 架构说明
+
+```
+浏览器 (chat.html)
+    ↓
+前端 JS (chat.js) 调用 http://localhost:8080/api/chat/message
+    ↓
+后端服务器 (server.js)
+    ↓
+Coze API (api.coze.cn)
+    ↓
+返回 AI 回复
+```
+
+## ⚡ 优势
+
+- ✅ API Token 在服务器端，安全
+- ✅ 无跨域问题
+- ✅ 便于扩展和维护
+
+## 🧪 测试聊天功能
+
+### 1. 测试后端 API
+
+```bash
+# 测试聊天接口
+curl -X POST http://localhost:8080/api/chat/message \
+  -H "Content-Type: application/json" \
+  -d '{"message": "你好"}'
+```
+
+### 2. 在浏览器中测试
+
+1. 打开 `web_finalexam/html/chat.html`
+2. 在输入框输入消息
+3. 点击发送或按 Enter
+4. 等待 AI 回复
+
+## ❓ 常见问题
+
+### Q1: 提示"聊天服务未配置"
+**A**: 检查 `.env` 文件是否包含 `COZE_BOT_ID` 和 `COZE_API_TOKEN`，然后重启后端服务。
+
+### Q2: 前端无法连接后端
+**A**: 确认后端服务已启动在 8080 端口，可以用 `curl http://localhost:8080/api/album/health` 测试。
+
+### Q3: AI 没有回复
+**A**:
+1. 检查后端控制台日志
+2. 确认 Bot ID 和 API Token 是否正确
+3. 确认网络连接正常
+
+---
+
+**开始享受智能对话吧！💬**

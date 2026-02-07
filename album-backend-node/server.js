@@ -351,6 +351,121 @@ app.delete('/api/album/delete/:id', async (req, res) => {
   }
 });
 
+// ==================== Coze 聊天 API ====================
+
+// Coze 聊天接口
+app.post('/api/chat/message', async (req, res) => {
+  try {
+    const { message, userId } = req.body;
+
+    // 验证
+    if (!message || !message.trim()) {
+      return res.status(400).json(errorResponse('消息不能为空', 400));
+    }
+
+    // 检查 Coze 配置
+    if (!process.env.COZE_BOT_ID || !process.env.COZE_API_TOKEN) {
+      console.error('❌ Coze configuration missing');
+      return res.status(500).json(errorResponse('聊天服务未配置', 500));
+    }
+
+    const cozeUserId = userId || 'user_' + Math.random().toString(36).substr(2, 9);
+    console.log(`💬 Coze chat request from user: ${cozeUserId}, message: ${message}`);
+
+    // Step 1: 创建对话
+    const createChatUrl = 'https://api.coze.cn/v3/chat';
+    const requestBody = {
+      bot_id: process.env.COZE_BOT_ID,
+      user_id: cozeUserId,
+      stream: false,
+      auto_save_history: true,
+      additional_messages: [
+        {
+          role: 'user',
+          content: message.trim(),
+          content_type: 'text'
+        }
+      ]
+    };
+
+    const createResponse = await fetch(createChatUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.COZE_API_TOKEN}`
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    const createData = await createResponse.json();
+    console.log('📥 Create chat response:', JSON.stringify(createData));
+
+    if (!createResponse.ok || createData.code !== 0) {
+      console.error('❌ Coze API error:', createData);
+      return res.status(500).json(errorResponse('聊天服务暂时不可用', 500));
+    }
+
+    const conversationId = createData.data.conversation_id;
+    const chatId = createData.data.id;
+
+    // Step 2: 轮询获取结果
+    let reply = '抱歉，我现在有点累，稍后再回复你吧！😊';
+    const maxAttempts = 30; // 最多尝试 30 次
+    const pollInterval = 1000; // 每次间隔 1 秒
+
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+
+      // 获取对话消息
+      const retrieveUrl = `https://api.coze.cn/v3/chat/retrieve?conversation_id=${conversationId}&chat_id=${chatId}`;
+      const retrieveResponse = await fetch(retrieveUrl, {
+        headers: {
+          'Authorization': `Bearer ${process.env.COZE_API_TOKEN}`
+        }
+      });
+
+      const retrieveData = await retrieveResponse.json();
+      console.log(`🔄 Retrieve attempt ${i + 1}:`, JSON.stringify(retrieveData));
+
+      if (retrieveData.code === 0 && retrieveData.data) {
+        const status = retrieveData.data.status;
+
+        if (status === 'completed') {
+          // 对话完成，获取消息列表
+          const messagesUrl = `https://api.coze.cn/v3/chat/message/list?conversation_id=${conversationId}&chat_id=${chatId}`;
+          const messagesResponse = await fetch(messagesUrl, {
+            headers: {
+              'Authorization': `Bearer ${process.env.COZE_API_TOKEN}`
+            }
+          });
+
+          const messagesData = await messagesResponse.json();
+          console.log('📨 Messages:', JSON.stringify(messagesData));
+
+          if (messagesData.code === 0 && messagesData.data && messagesData.data.length > 0) {
+            // 找到 assistant 的回复
+            const assistantMsg = messagesData.data.find(msg => msg.role === 'assistant' && msg.type === 'answer');
+            if (assistantMsg && assistantMsg.content) {
+              reply = assistantMsg.content;
+            }
+          }
+          break;
+        } else if (status === 'failed') {
+          console.error('❌ Chat failed:', retrieveData.data.last_error);
+          break;
+        }
+        // 如果是 in_progress 或 created，继续轮询
+      }
+    }
+
+    console.log(`✅ Final reply: ${reply}`);
+    res.json(successResponse({ reply, userId: cozeUserId }));
+  } catch (error) {
+    console.error('❌ Chat error:', error);
+    res.status(500).json(errorResponse('聊天失败: ' + error.message, 500));
+  }
+});
+
 // ==================== 留言板 API ====================
 
 // 发表留言
@@ -511,6 +626,7 @@ app.listen(PORT, () => {
   console.log(`   - GET    /api/album/list`);
   console.log(`   - DELETE /api/album/delete/:id`);
   console.log(`   - GET    /uploads/:filename (静态文件)`);
+  console.log(`\n   - POST   /api/chat/message`);
   console.log(`\n   - POST   /api/board/post`);
   console.log(`   - GET    /api/board/list`);
   console.log(`   - DELETE /api/board/delete/:id`);

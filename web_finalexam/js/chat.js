@@ -38,7 +38,7 @@ function initEventListeners() {
 }
 
 // 发送消息
-function sendMessage() {
+async function sendMessage() {
     const messageInput = document.getElementById('messageInput');
     const text = messageInput.value.trim();
 
@@ -53,11 +53,23 @@ function sendMessage() {
     messageInput.value = '';
     messageInput.style.height = 'auto';
 
-    // 模拟角色回复（延迟1秒）
-    setTimeout(() => {
-        const botReply = generateBotReply(text);
+    // 显示"正在输入"提示
+    const typingIndicator = addTypingIndicator();
+
+    try {
+        // 调用 Coze API 获取回复
+        const botReply = await generateBotReply(text);
+
+        // 移除"正在输入"提示
+        removeTypingIndicator(typingIndicator);
+
+        // 添加 Bot 回复
         addMessage('bot', botReply);
-    }, 1000);
+    } catch (error) {
+        console.error('发送消息失败:', error);
+        removeTypingIndicator(typingIndicator);
+        addMessage('bot', '抱歉，我遇到了一些问题。请稍后再试。🙏');
+    }
 }
 
 // 添加消息
@@ -106,65 +118,51 @@ function renderMessage(message) {
     chatMessages.appendChild(messageDiv);
 }
 
-// 生成机器人回复（简单的关键词匹配）
-function generateBotReply(userMessage) {
-    const lowerMessage = userMessage.toLowerCase();
+// 后端 API 配置
+const API_CONFIG = {
+    baseUrl: 'https://blog-production-24dd.up.railway.app',  // Railway 后端地址
+    chatEndpoint: '/api/chat/message'
+};
 
-    // 关键词回复
-    if (lowerMessage.includes('你好') || lowerMessage.includes('hi') || lowerMessage.includes('hello')) {
-        return '你好！很高兴见到你！有什么我可以帮助你的吗？😊';
+// 调用后端 API 生成回复
+async function generateBotReply(userMessage) {
+    try {
+        // 从 localStorage 获取或创建用户 ID
+        let userId = localStorage.getItem('chatUserId');
+        if (!userId) {
+            userId = 'user_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('chatUserId', userId);
+        }
+
+        const response = await fetch(API_CONFIG.baseUrl + API_CONFIG.chatEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: userMessage,
+                userId: userId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('API 请求失败');
+        }
+
+        const data = await response.json();
+
+        // 检查返回数据
+        if (data.code === 200 && data.data && data.data.reply) {
+            return data.data.reply;
+        }
+
+        // 如果没有找到有效回复，返回默认消息
+        return '抱歉，我现在有点累，稍后再回复你吧！😊';
+    } catch (error) {
+        console.error('后端 API 调用失败:', error);
+        // 出错时返回友好的错误提示
+        return '抱歉，我遇到了一些问题。请稍后再试。🙏';
     }
-
-    if (lowerMessage.includes('名字') || lowerMessage.includes('叫什么')) {
-        return '我是 WZY 助手，一个智能对话助手。很高兴为你服务！';
-    }
-
-    if (lowerMessage.includes('帮助') || lowerMessage.includes('help')) {
-        return '我可以和你聊天、回答问题。你可以问我任何事情，我会尽力帮助你！💪';
-    }
-
-    if (lowerMessage.includes('时间')) {
-        const now = new Date();
-        return `现在是 ${now.toLocaleString('zh-CN')}`;
-    }
-
-    if (lowerMessage.includes('天气')) {
-        return '抱歉，我暂时无法查询天气信息。你可以访问天气网站获取最新天气预报。🌤️';
-    }
-
-    if (lowerMessage.includes('再见') || lowerMessage.includes('拜拜') || lowerMessage.includes('bye')) {
-        return '再见！期待下次与你聊天！👋';
-    }
-
-    if (lowerMessage.includes('技术') || lowerMessage.includes('编程') || lowerMessage.includes('代码')) {
-        return '我对技术很感兴趣！你想聊聊哪方面的技术呢？前端、后端还是其他？💻';
-    }
-
-    if (lowerMessage.includes('前端')) {
-        return '前端开发很有趣！HTML、CSS、JavaScript 是基础，React、Vue 等框架也很流行。你在学习哪个方向呢？';
-    }
-
-    if (lowerMessage.includes('后端')) {
-        return '后端开发涉及服务器、数据库、API 等。Node.js、Python、Java 都是不错的选择！';
-    }
-
-    if (lowerMessage.includes('谢谢') || lowerMessage.includes('感谢')) {
-        return '不客气！很高兴能帮到你！😊';
-    }
-
-    // 默认回复
-    const defaultReplies = [
-        '这是个有趣的话题！能详细说说吗？🤔',
-        '我理解你的意思了。还有什么想聊的吗？',
-        '嗯嗯，继续说下去吧！我在认真听呢！👂',
-        '有意思！你对这个话题有什么看法？',
-        '我明白了。你还想了解什么呢？',
-        '说得对！我也这么认为。✨',
-        '这个问题很好！让我想想...🤔',
-        '原来如此！你真是太聪明了！🌟'
-    ];
-
-    return defaultReplies[Math.floor(Math.random() * defaultReplies.length)];
 }
 
 // 清空对话
@@ -210,4 +208,34 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// 添加"正在输入"指示器
+function addTypingIndicator() {
+    const chatMessages = document.getElementById('chatMessages');
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'message bot typing-indicator';
+    typingDiv.id = 'typing-indicator';
+    typingDiv.innerHTML = `
+        <div class="message-avatar">
+            <img src="../image/homepic1.png" alt="角色头像">
+        </div>
+        <div class="message-content">
+            <div class="message-bubble">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+            </div>
+        </div>
+    `;
+    chatMessages.appendChild(typingDiv);
+    scrollToBottom();
+    return typingDiv;
+}
+
+// 移除"正在输入"指示器
+function removeTypingIndicator(indicator) {
+    if (indicator && indicator.parentNode) {
+        indicator.parentNode.removeChild(indicator);
+    }
 }
