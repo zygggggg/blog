@@ -33,7 +33,14 @@
       "Bash(git mv:*)",
       "Bash(MY PROFILE\" with \"PHROLOVA\" across all pages\n- Increase transparency for better frosted glass effect\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(start web_finalexam/html/information.html)",
-      "Bash(git remote get-url:*)"
+      "Bash(git remote get-url:*)",
+      "WebFetch(domain:www.coze.cn)",
+      "Bash(pkill:*)",
+      "Bash(netstat:*)",
+      "Bash(taskkill:*)",
+      "Bash(xargs:*)",
+      "WebFetch(domain:wutheringwavesfll.vercel.app)",
+      "Bash(python -m http.server:*)"
     ]
   }
 }
