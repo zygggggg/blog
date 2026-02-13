@@ -202,6 +202,17 @@ nav {
 
 #cards-section {
     transition: all 0.8s ease;
+    display: grid;
+    grid-template-columns: repeat(4, 250px);
+    gap: 50px;
+    justify-content: center;
+    align-content: center;
+    height: 100vh;
+}
+
+#cards-section > a {
+    text-decoration: none;
+    display: block;
 }
 
 .foot {
@@ -307,8 +318,6 @@ nav {
     flex-direction: column;
     height: 500px;
     width: 250px;
-    float: left;
-    margin: 150px 0px 0px 105px;
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);

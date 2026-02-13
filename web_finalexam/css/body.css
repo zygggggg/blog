@@ -36,24 +36,19 @@ body::before {
     background: rgb(194, 213, 241);
 }
 
-.foot{
-    margin-top: 0px;
-    width: 100vw;
-    height: 100px;
-    float: left;
-    clear: both;
-    text-align: center;
-    margin-bottom: 0px;
-    background-color: rgba(84, 132, 161, 0.8);
-    position: relative;
-    z-index: 10;
-}
-.foot p{
-    line-height: 10px;
-    color: rgb(28, 43, 43);
-}
 /* 确保所有页面内容在蒙版之上 */
-.mid, .chat-container, .board-container, .upload-section, .modal {
+.mid, .chat-container, .upload-section, .modal {
     position: relative;
     z-index: 10;
+}
+
+/* 留言板容器不设置position，避免影响fixed定位 */
+.board-container {
+    position: relative;
+    z-index: 10;
+}
+
+/* 确保发表留言区域始终在最上层 */
+.post-message-section {
+    z-index: 1001 !important;
 }

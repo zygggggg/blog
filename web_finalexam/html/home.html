@@ -116,11 +116,6 @@
             </div>
         </a>
     </section>
-        <footer class="foot">
-            <p>@2025-2026  |  BY:WZY</p>
-            <p>网页版权归WZY所有</p>
-            <p>无限进步 Infinite Progress</p>
-        </footer>
 
     </main>
 
@@ -256,7 +251,6 @@
             const heroContent = document.querySelector('.hero-content');
             const nav = document.querySelector('nav');
             const cardsSection = document.getElementById('cards-section');
-            const footer = document.querySelector('.foot');
 
             isWallpaperMode = !isWallpaperMode;
 
@@ -267,8 +261,6 @@
                 nav.style.opacity = '0';
                 cardsSection.style.transform = 'translateY(100vh)';
                 cardsSection.style.opacity = '0';
-                footer.style.transform = 'translateY(100%)';
-                footer.style.opacity = '0';
             } else {
                 // 退出壁纸模式：恢复所有内容
                 heroContent.classList.remove('wallpaper-mode');
@@ -276,8 +268,6 @@
                 nav.style.opacity = '1';
                 cardsSection.style.transform = 'translateY(0)';
                 cardsSection.style.opacity = '1';
-                footer.style.transform = 'translateY(0)';
-                footer.style.opacity = '1';
             }
         }
 

@@ -62,6 +62,30 @@ async function loadImages(forceRefresh = false) {
 // 显示图片网格
 function displayImages(images) {
     const banner = document.getElementById('banner');
+
+    // 检查是否有骨架屏
+    const skeletons = document.querySelectorAll('.skeleton-card');
+    const hasSkeleton = skeletons.length > 0;
+
+    if (hasSkeleton) {
+        // 添加淡出动画
+        skeletons.forEach(skeleton => {
+            skeleton.classList.add('skeleton-fadeout');
+        });
+
+        // 等待动画完成后再显示真实内容
+        setTimeout(() => {
+            renderRealImages(banner, images);
+        }, 300);
+    } else {
+        // 直接显示（可能是刷新操作）
+        renderRealImages(banner, images);
+    }
+}
+
+// 渲染真实图片
+function renderRealImages(banner, images) {
+    // 清空所有内容（包括骨架屏）
     banner.innerHTML = '';
 
     if (images.length === 0) {
