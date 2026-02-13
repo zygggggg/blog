@@ -31,6 +31,9 @@ nav:hover{
 nav .navtitle{
     padding-left: 50px;
     width: 30%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 nav .navtitle strong{
     font-size: 50px;
@@ -39,6 +42,76 @@ nav .navtitle strong{
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+}
+
+/* 背景选择按钮 */
+.bg-selector-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.bg-selector-btn:hover {
+    background: linear-gradient(135deg, rgba(139, 0, 255, 0.4) 0%, rgba(186, 85, 211, 0.35) 50%, rgba(138, 43, 226, 0.4) 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(139, 0, 255, 0.4), 0 0 20px rgba(186, 85, 211, 0.2);
+    border-color: rgba(186, 85, 211, 0.5);
+    color: #fff;
+}
+
+.bg-selector-btn:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 4px 15px rgba(139, 0, 255, 0.3);
+}
+
+.bg-selector-btn svg {
+    flex-shrink: 0;
+}
+
+/* 音乐按钮 */
+.music-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.music-btn:hover {
+    background: linear-gradient(135deg, rgba(139, 0, 255, 0.4) 0%, rgba(186, 85, 211, 0.35) 50%, rgba(138, 43, 226, 0.4) 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(139, 0, 255, 0.4), 0 0 20px rgba(186, 85, 211, 0.2);
+    border-color: rgba(186, 85, 211, 0.5);
+    color: #fff;
+}
+
+.music-btn:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 4px 15px rgba(139, 0, 255, 0.3);
+}
+
+.music-btn svg {
+    flex-shrink: 0;
 }
 nav a{
    display: block;

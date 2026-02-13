@@ -72,7 +72,7 @@ html {
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
-    padding: 90px 20px 200px 20px; /* 底部预留足够空间 */
+    padding: 90px 20px 220px 20px; /* 底部预留足够空间 */
     position: relative;
     min-height: calc(100vh - 200px);
     display: flex;
@@ -142,34 +142,37 @@ html {
 
 /* 发表留言区域 - 固定在底部 */
 .post-message-section {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    background: rgba(0, 0, 0, 0.85) !important;
-    border-radius: 0;
-    padding: 20px;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 900px;
+    padding: 25px 30px;
+    background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(20px) saturate(180%);
-    border-top: 2px solid rgba(139, 0, 255, 0.5);
+    border: 2px solid rgba(139, 0, 255, 0.5);
+    border-radius: 16px;
     box-shadow: 0 -8px 32px rgba(139, 0, 255, 0.3),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    z-index: 9999 !important;
+                inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    /* 关键：让整个区域变成一个弹性容器，内容水平居中 */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* 水平居中 */
+    align-items: center;     /* 垂直居中 */
 }
 
 .post-message-section h2 {
     display: none;
 }
 
+/* 表单容器：限制最大宽度并居中 */
 .post-form {
     display: flex;
     gap: 10px;
     width: 100%;
-    max-width: 800px;
-    margin: 0;
+    max-width: 800px; /* 与 .board-container 一致 */
     align-items: center;
     flex-wrap: nowrap;
 }
@@ -466,7 +469,7 @@ html {
 /* 移动设备 */
 @media (max-width: 768px) {
     .board-container {
-        padding: 80px 15px 250px 15px; /* 移动端底部预留更多空间 */
+        padding: 80px 15px 280px 15px; /* 移动端底部预留更多空间 */
         gap: 20px;
     }
 
@@ -479,13 +482,14 @@ html {
     }
 
     .post-message-section {
-        padding: 15px !important;
+        padding: 20px;
+        width: 95%;
+        bottom: 15px;
     }
 
     .post-form {
         flex-direction: column;
-        width: 100%;
-        max-width: 100%;
+        align-items: stretch; /* 让子元素占满宽度 */
     }
 
     #nicknameInput,
@@ -528,7 +532,7 @@ html {
 /* 小屏手机 */
 @media (max-width: 480px) {
     .board-container {
-        padding: 70px 10px 270px 10px; /* 小屏底部预留更多空间 */
+        padding: 70px 10px 300px 10px; /* 小屏底部预留更多空间 */
     }
 
     .board-header {
@@ -540,7 +544,9 @@ html {
     }
 
     .post-message-section {
-        padding: 12px !important;
+        padding: 15px 20px;
+        width: 96%;
+        bottom: 10px;
     }
 
     #nicknameInput,

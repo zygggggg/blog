@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="../css/nav.css">
     <link rel="stylesheet" href="../css/body.css">
     <link rel="stylesheet" href="../css/join.css">
+    <link rel="stylesheet" href="../css/homestyle.css">
+    <link rel="stylesheet" href="../css/music.css">
 
     <!-- 百度统计 -->
     <script>
@@ -33,6 +35,20 @@
 <body>
     <nav>
         <div class="navtitle"><strong>PHROLOVA</strong></div>
+        <button class="bg-selector-btn" onclick="openImageSelector()" title="选择背景">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+            </svg>
+        </button>
+        <button class="music-btn" onclick="toggleMusicPlayer()" title="音乐播放器">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18V5l12-2v13"></path>
+                <circle cx="6" cy="18" r="3"></circle>
+                <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+        </button>
         <a href="home.html">HOME</a>
         <a href="information.html">VIDEO</a>
         <a href="chat.html">CHAT</a>
@@ -72,6 +88,82 @@
         </div>
     </div>
 
+    <!-- 图片选择弹窗 -->
+    <div id="imageSelector" class="image-selector">
+        <div class="selector-content">
+            <h2 class="selector-title">选择你喜欢的背景</h2>
+            <div class="image-grid" id="imageGrid"></div>
+            <button class="close-btn" onclick="closeImageSelector()">关闭</button>
+        </div>
+    </div>
+
+    <!-- 音乐播放器 -->
+    <div id="musicPlayer" class="music-player">
+        <div class="music-header">
+            <h3>🎵 音乐播放器</h3>
+            <button class="close-music-btn" onclick="toggleMusicPlayer()">×</button>
+        </div>
+        <div class="music-info">
+            <div class="music-cover">
+                <img id="musicCover" src="../image/homepic1.png" alt="封面">
+            </div>
+            <div class="music-details">
+                <div class="music-title" id="musicTitle">未选择音乐</div>
+                <div class="music-artist" id="musicArtist">-</div>
+            </div>
+        </div>
+        <div class="music-progress">
+            <span class="time-current" id="currentTime">0:00</span>
+            <input type="range" class="progress-bar" id="progressBar" min="0" max="100" value="0">
+            <span class="time-total" id="totalTime">0:00</span>
+        </div>
+        <div class="music-controls">
+            <button class="control-btn" id="shuffleBtn" onclick="toggleShuffle()" title="随机播放">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 3 21 3 21 8"></polyline>
+                    <line x1="4" y1="20" x2="21" y2="3"></line>
+                    <polyline points="21 16 21 21 16 21"></polyline>
+                    <line x1="15" y1="15" x2="21" y2="21"></line>
+                    <line x1="4" y1="4" x2="9" y2="9"></line>
+                </svg>
+            </button>
+            <button class="control-btn" onclick="previousTrack()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M6 6h2v12H6zM10 6l8.5 6l-8.5 6z"/>
+                </svg>
+            </button>
+            <button class="control-btn play-btn" id="playBtn" onclick="togglePlay()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+            </button>
+            <button class="control-btn" onclick="nextTrack()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M5.5 6l8.5 6l-8.5 6V6zM16 6h2v12h-2z"/>
+                </svg>
+            </button>
+            <button class="control-btn" id="loopBtn" onclick="toggleLoop()" title="单曲循环">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 1l4 4-4 4"></path>
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                    <path d="M7 23l-4-4 4-4"></path>
+                    <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                    <text x="12" y="16" font-size="10" fill="currentColor" text-anchor="middle" font-weight="bold">1</text>
+                </svg>
+            </button>
+        </div>
+        <div class="music-playlist">
+            <h4>播放列表</h4>
+            <div id="playlistContainer" class="playlist-items">
+                <div class="playlist-item" onclick="loadTrack(0)">
+                    <span>1. 示例歌曲 1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer" preload="metadata"></audio>
+
     <script>
         // 应用保存的背景
         window.addEventListener('DOMContentLoaded', function() {
@@ -82,7 +174,265 @@
             document.body.style.backgroundSize = 'cover';
             document.body.style.backgroundPosition = 'center';
             document.body.style.backgroundAttachment = 'fixed';
+
+            // 初始化背景选择器
+            initBackgroundSelector();
+
+            // 初始化音乐播放器
+            initMusicPlayer();
         });
+
+        // ====== 音乐播放器功能 ======
+        const audioPlayer = document.getElementById('audioPlayer');
+        let currentTrackIndex = 0;
+        let isLooping = false;
+        let isShuffling = false;
+
+        // 音乐列表
+        const playlist = [
+            { title: '酣梦于彼岸深红', artist: 'fll', src: '../music/fll_酣梦于彼岸深红.ogg', cover: '../image/homepic1.png' },
+            { title: '那颗星梦见的春日', artist: 'imiss', src: '../music/imiss_那颗星梦见的春日.ogg', cover: '../image/homepic1.png' },
+            { title: '远航星的告别', artist: 'imiss', src: '../music/imiss_远航星的告别.ogg', cover: '../image/homepic1.png' }
+        ];
+
+        function initMusicPlayer() {
+            // 渲染播放列表
+            renderPlaylist();
+
+            // 绑定进度条事件
+            const progressBar = document.getElementById('progressBar');
+            progressBar.addEventListener('input', function() {
+                const seekTime = (audioPlayer.duration / 100) * this.value;
+                audioPlayer.currentTime = seekTime;
+            });
+
+            // 监听音频时间更新
+            audioPlayer.addEventListener('timeupdate', updateProgress);
+
+            // 监听音频结束
+            audioPlayer.addEventListener('ended', function() {
+                if (isLooping) {
+                    audioPlayer.currentTime = 0;
+                    audioPlayer.play();
+                } else {
+                    nextTrack();
+                }
+            });
+
+            // 监听音频加载完成
+            audioPlayer.addEventListener('loadedmetadata', function() {
+                document.getElementById('totalTime').textContent = formatTime(audioPlayer.duration);
+            });
+        }
+
+        function renderPlaylist() {
+            const container = document.getElementById('playlistContainer');
+            container.innerHTML = '';
+
+            playlist.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'playlist-item';
+                if (index === currentTrackIndex) {
+                    item.classList.add('active');
+                }
+                item.innerHTML = `<span>${index + 1}. ${track.title} - ${track.artist}</span>`;
+                item.onclick = () => loadTrack(index);
+                container.appendChild(item);
+            });
+        }
+
+        function loadTrack(index) {
+            if (index < 0 || index >= playlist.length) return;
+
+            currentTrackIndex = index;
+            const track = playlist[index];
+
+            audioPlayer.src = track.src;
+            document.getElementById('musicTitle').textContent = track.title;
+            document.getElementById('musicArtist').textContent = track.artist;
+            document.getElementById('musicCover').src = track.cover;
+
+            renderPlaylist();
+
+            // 自动播放
+            audioPlayer.play().catch(err => {
+                console.log('自动播放被阻止:', err);
+            });
+
+            updatePlayButton(true);
+        }
+
+        function togglePlay() {
+            if (audioPlayer.paused) {
+                if (!audioPlayer.src) {
+                    loadTrack(0);
+                } else {
+                    audioPlayer.play();
+                }
+                updatePlayButton(true);
+            } else {
+                audioPlayer.pause();
+                updatePlayButton(false);
+            }
+        }
+
+        function updatePlayButton(isPlaying) {
+            const playBtn = document.getElementById('playBtn');
+            if (isPlaying) {
+                playBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 4h4v16H6zM14 4h4v16h-4z"/>
+                    </svg>
+                `;
+            } else {
+                playBtn.innerHTML = `
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                `;
+            }
+        }
+
+        function previousTrack() {
+            currentTrackIndex = (currentTrackIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(currentTrackIndex);
+        }
+
+        function nextTrack() {
+            if (isShuffling) {
+                // 随机选择下一首（不重复当前歌曲）
+                let nextIndex;
+                do {
+                    nextIndex = Math.floor(Math.random() * playlist.length);
+                } while (nextIndex === currentTrackIndex && playlist.length > 1);
+                currentTrackIndex = nextIndex;
+            } else {
+                currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+            }
+            loadTrack(currentTrackIndex);
+        }
+
+        function toggleLoop() {
+            isLooping = !isLooping;
+            const loopBtn = document.getElementById('loopBtn');
+            const shuffleBtn = document.getElementById('shuffleBtn');
+
+            if (isLooping) {
+                // 开启循环，关闭随机
+                isShuffling = false;
+                shuffleBtn.style.color = 'rgba(255, 255, 255, 0.85)';
+                shuffleBtn.style.transform = 'scale(1)';
+            }
+
+            loopBtn.style.color = isLooping ? '#FF6B9D' : 'rgba(255, 255, 255, 0.85)';
+            loopBtn.style.transform = isLooping ? 'scale(1.1)' : 'scale(1)';
+        }
+
+        function toggleShuffle() {
+            isShuffling = !isShuffling;
+            const shuffleBtn = document.getElementById('shuffleBtn');
+            const loopBtn = document.getElementById('loopBtn');
+
+            if (isShuffling) {
+                // 开启随机，关闭循环
+                isLooping = false;
+                loopBtn.style.color = 'rgba(255, 255, 255, 0.85)';
+                loopBtn.style.transform = 'scale(1)';
+            }
+
+            shuffleBtn.style.color = isShuffling ? '#FF6B9D' : 'rgba(255, 255, 255, 0.85)';
+            shuffleBtn.style.transform = isShuffling ? 'scale(1.1)' : 'scale(1)';
+        }
+
+        function updateProgress() {
+            const progressBar = document.getElementById('progressBar');
+            const currentTime = document.getElementById('currentTime');
+
+            const progress = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+            progressBar.value = progress || 0;
+            currentTime.textContent = formatTime(audioPlayer.currentTime);
+        }
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return '0:00';
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function toggleMusicPlayer() {
+            const player = document.getElementById('musicPlayer');
+            player.classList.toggle('show');
+        }
+
+        // ====== 背景选择器功能 ======
+        // 初始化背景选择器
+        function initBackgroundSelector() {
+            const fallbackImages = [
+                'IMG_E5416.JPG', 'IMG_E5417.jpeg', 'IMG_E5419.jpeg',
+                'IMG_E5421-upscaled.png', 'IMG_E5423-upscaled.png',
+                'IMG_E5424-upscaled.png', 'IMG_E5426-upscaled.png', 'IMG_E5427-upscaled.png',
+                'IMG_E5429-upscaled.png', 'IMG_E5430-upscaled.png', 'IMG_E5431-upscaled.png',
+                'IMG_E5432-upscaled.png', 'IMG_E5433-upscaled.png', 'IMG_E5434-upscaled.png'
+            ];
+
+            const imageGrid = document.getElementById('imageGrid');
+            imageGrid.innerHTML = '';
+
+            const savedBg = localStorage.getItem('selectedBackground') || 'IMG_E5419.jpeg';
+
+            fallbackImages.forEach((img, index) => {
+                const item = document.createElement('div');
+                item.className = 'image-item';
+
+                const imgElement = document.createElement('img');
+                imgElement.loading = 'lazy';
+                imgElement.src = `../image/fll/system_image/${img}`;
+                imgElement.alt = `背景${index + 1}`;
+
+                // 如果是当前选中的背景，添加 selected 类
+                if (img === savedBg) {
+                    item.classList.add('selected');
+                }
+
+                item.appendChild(imgElement);
+                item.onclick = () => selectImage(img, item);
+                imageGrid.appendChild(item);
+            });
+        }
+
+        // 选择图片
+        function selectImage(imageUrl, element) {
+            // 移除其他选中状态
+            document.querySelectorAll('.image-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            // 添加选中状态
+            element.classList.add('selected');
+            // 更改背景
+            applyBackground(imageUrl);
+            // 保存到本地存储
+            localStorage.setItem('selectedBackground', imageUrl);
+        }
+
+        // 应用背景
+        function applyBackground(imageUrl) {
+            const bgUrl = imageUrl.startsWith('http') ? imageUrl : `../image/fll/system_image/${imageUrl}`;
+            document.body.style.setProperty('background-image', `url('${bgUrl}')`, 'important');
+            document.body.style.setProperty('background-size', 'cover', 'important');
+            document.body.style.setProperty('background-position', 'center', 'important');
+            document.body.style.setProperty('background-attachment', 'fixed', 'important');
+        }
+
+        // 打开选择器
+        function openImageSelector() {
+            document.getElementById('imageSelector').style.display = 'flex';
+        }
+
+        // 关闭选择器
+        function closeImageSelector() {
+            document.getElementById('imageSelector').style.display = 'none';
+        }
     </script>
 
     <script src="../js/board.js"></script>
