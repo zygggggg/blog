@@ -143,63 +143,11 @@
             }
         }
 
-        // 图片缓存
-        let cachedImages = null;
-        const CACHE_KEY = 'oss_background_images';
-        const CACHE_EXPIRY_KEY = 'oss_background_images_expiry';
-        const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24小时
-
-        // 加载图片列表
+        // 加载图片列表（使用本地图片）
         async function loadImages() {
-            return new Promise(async (resolve) => {
-                try {
-                    // 检查缓存
-                    const cachedData = localStorage.getItem(CACHE_KEY);
-                    const cacheExpiry = localStorage.getItem(CACHE_EXPIRY_KEY);
-                    const now = Date.now();
-
-                    if (cachedData && cacheExpiry && now < parseInt(cacheExpiry)) {
-                        console.log('✅ 使用缓存的背景图片列表');
-                        const images = JSON.parse(cachedData);
-                        renderImageGrid(images);
-                        resolve(images.map(img => img.url));
-                        return;
-                    }
-
-                    // 从后端 API 获取 OSS 背景图片列表
-                    const API_URL = 'https://blog-production-24dd.up.railway.app/api/backgrounds';
-
-                    console.log('📡 正在从 API 获取背景图片列表...');
-                    const response = await fetch(API_URL);
-
-                    if (!response.ok) {
-                        throw new Error(`API 请求失败: ${response.status}`);
-                    }
-
-                    const result = await response.json();
-
-                    if (result.code === 200 && result.data && result.data.length > 0) {
-                        const images = result.data;
-                        console.log('✅ 成功从 OSS 加载背景列表');
-                        console.log('📋 图片数量:', images.length);
-
-                        // 缓存数据
-                        localStorage.setItem(CACHE_KEY, JSON.stringify(images));
-                        localStorage.setItem(CACHE_EXPIRY_KEY, (now + CACHE_DURATION).toString());
-
-                        renderImageGrid(images);
-
-                        // 返回 URL 数组
-                        resolve(images.map(img => img.url));
-                    } else {
-                        console.warn('⚠️  API 返回空列表，使用备用图片');
-                        loadFallbackImages(resolve);
-                    }
-                } catch (err) {
-                    console.error('❌ 从 API 加载失败:', err.message);
-                    console.warn('⚠️  使用硬编码的备用图片列表');
-                    loadFallbackImages(resolve);
-                }
+            return new Promise((resolve) => {
+                console.log('✅ 使用本地背景图片列表');
+                loadFallbackImages(resolve);
             });
         }
 
@@ -224,19 +172,19 @@
             });
         }
 
-        // 回退到硬编码列表
+        // 回退到硬编码列表（现在作为主要加载方式）
         function loadFallbackImages(resolve) {
-            console.warn('⚠️ 使用硬编码的备用图片列表');
+            console.log('📋 加载本地背景图片');
 
             const fallbackImages = [
                 'IMG_E5416.JPG', 'IMG_E5417.jpeg', 'IMG_E5419.jpeg',
-                'IMG_E5421-upscaled.png', 'IMG_E5422.JPG', 'IMG_E5423-upscaled.png',
+                'IMG_E5421-upscaled.png', 'IMG_E5423-upscaled.png',
                 'IMG_E5424-upscaled.png', 'IMG_E5426-upscaled.png', 'IMG_E5427-upscaled.png',
                 'IMG_E5429-upscaled.png', 'IMG_E5430-upscaled.png', 'IMG_E5431-upscaled.png',
                 'IMG_E5432-upscaled.png', 'IMG_E5433-upscaled.png', 'IMG_E5434-upscaled.png'
             ];
 
-            console.log('📋 备用图片数量:', fallbackImages.length);
+            console.log('📋 图片数量:', fallbackImages.length);
 
             const imageGrid = document.getElementById('imageGrid');
             imageGrid.innerHTML = ''; // 清空现有内容

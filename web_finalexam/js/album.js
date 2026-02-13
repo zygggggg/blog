@@ -8,7 +8,7 @@ let pageSize = 20;
 // 缓存配置
 const CACHE_KEY = 'album_images_cache';
 const CACHE_EXPIRY_KEY = 'album_images_cache_expiry';
-const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存（相册更新频繁，缓存时间短一些）
+const CACHE_DURATION = 30 * 60 * 1000; // 30分钟缓存
 
 // 页面加载
 window.onload = function() {
@@ -79,7 +79,10 @@ function displayImages(images) {
 
         imageCard.innerHTML = `
             <div class="image-wrapper">
-                <img src="${image.fileUrl}" alt="${image.description || '图片'}" loading="lazy">
+                <img src="${image.fileUrl}"
+                     alt="${image.description || '图片'}"
+                     loading="lazy"
+                     decoding="async">
                 <div class="image-overlay">
                     <div class="image-info">
                         <p class="image-desc">${image.description || '无描述'}</p>
