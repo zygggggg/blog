@@ -72,13 +72,12 @@ html {
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
-    padding: 90px 20px 20px 20px;
+    padding: 90px 20px 200px 20px; /* 底部预留足够空间 */
     position: relative;
-    min-height: 100vh;
+    min-height: calc(100vh - 200px);
     display: flex;
     flex-direction: column;
     gap: 30px; /* 头部和内容区域之间的间距 */
-    padding-bottom: 180px; /* 底部预留空间给固定输入框 */
 }
 
 /* 留言板头部 */
@@ -143,21 +142,20 @@ html {
 
 /* 发表留言区域 - 固定在底部 */
 .post-message-section {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: none;
-    background: linear-gradient(to top, rgba(26, 10, 46, 0.98), rgba(26, 10, 46, 0.95));
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    background: rgba(0, 0, 0, 0.85) !important;
     border-radius: 0;
     padding: 20px;
     backdrop-filter: blur(20px) saturate(180%);
     border-top: 2px solid rgba(139, 0, 255, 0.5);
     box-shadow: 0 -8px 32px rgba(139, 0, 255, 0.3),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    animation: fadeIn 0.8s ease;
-    z-index: 1001;
+    z-index: 9999 !important;
 }
 
 .post-message-section h2 {
@@ -465,8 +463,7 @@ html {
 /* 移动设备 */
 @media (max-width: 768px) {
     .board-container {
-        padding: 80px 15px 20px 15px;
-        padding-bottom: 200px; /* 移动端底部预留更多空间给固定输入框 */
+        padding: 80px 15px 250px 15px; /* 移动端底部预留更多空间 */
         gap: 20px;
     }
 
@@ -479,7 +476,7 @@ html {
     }
 
     .post-message-section {
-        padding: 15px;
+        padding: 15px !important;
     }
 
     .post-form {
@@ -528,8 +525,7 @@ html {
 /* 小屏手机 */
 @media (max-width: 480px) {
     .board-container {
-        padding: 70px 10px 20px 10px;
-        padding-bottom: 220px;
+        padding: 70px 10px 270px 10px; /* 小屏底部预留更多空间 */
     }
 
     .board-header {
@@ -541,7 +537,7 @@ html {
     }
 
     .post-message-section {
-        padding: 12px;
+        padding: 12px !important;
     }
 
     #nicknameInput,

@@ -2,6 +2,7 @@
 body{
     margin: 0;
     padding: 0;
+    padding-bottom: 150px; /* 为固定底部输入框预留空间 */
     /* background-image 已通过内联脚本设置，避免闪烁 */
     background-attachment: fixed;
     background-repeat: no-repeat;
@@ -50,5 +51,7 @@ body::before {
 
 /* 确保发表留言区域始终在最上层 */
 .post-message-section {
-    z-index: 1001 !important;
+    z-index: 9999 !important;
+    position: fixed !important;
+    bottom: 0 !important;
 }
