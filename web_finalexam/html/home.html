@@ -4,11 +4,21 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WZY的主页</title>
+
+    <!-- 立即应用背景，避免闪烁 -->
+    <script>
+        (function() {
+            var savedBg = localStorage.getItem('selectedBackground') || 'IMG_E5419.jpeg';
+            var bgUrl = savedBg.indexOf('http') === 0 ? savedBg : '../image/fll/system_image/' + savedBg;
+            document.write('<style>body{background-image:url("' + bgUrl + '")!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important;}</style>');
+        })();
+    </script>
+
+    <link rel="stylesheet" href="../css/nav.css">
+    <link rel="stylesheet" href="../css/body.css">
     <link rel="stylesheet" href="../css/Loading.css">
     <link rel="stylesheet" href="../css/homestyle.css">
-    <link rel="stylesheet" href="../css/body.css">
-    <link rel="stylesheet" href="../css/nav.css">
-    <title>WZY的主页</title>
 
     <!-- 百度统计 -->
     <script>
@@ -210,10 +220,10 @@
         function applyBackground(imageUrl) {
             // 如果是完整 URL，直接使用；否则使用本地路径
             const bgUrl = imageUrl.startsWith('http') ? imageUrl : `../image/fll/system_image/${imageUrl}`;
-            document.body.style.backgroundImage = `url('${bgUrl}')`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundPosition = 'center';
-            document.body.style.backgroundAttachment = 'fixed';
+            document.body.style.setProperty('background-image', `url('${bgUrl}')`, 'important');
+            document.body.style.setProperty('background-size', 'cover', 'important');
+            document.body.style.setProperty('background-position', 'center', 'important');
+            document.body.style.setProperty('background-attachment', 'fixed', 'important');
         }
 
         // 选择图片

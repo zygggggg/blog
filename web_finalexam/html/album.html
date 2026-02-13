@@ -5,6 +5,16 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>相册</title>
+
+    <!-- 立即应用背景，避免闪烁 -->
+    <script>
+        (function() {
+            var savedBg = localStorage.getItem('selectedBackground') || 'IMG_E5419.jpeg';
+            var bgUrl = savedBg.indexOf('http') === 0 ? savedBg : '../image/fll/system_image/' + savedBg;
+            document.write('<style>body{background-image:url("' + bgUrl + '")!important;background-size:cover!important;background-position:center!important;background-attachment:fixed!important;}</style>');
+        })();
+    </script>
+
     <link rel="stylesheet" href="../css/body.css">
     <link rel="stylesheet" href="../css/nav.css">
     <link rel="stylesheet" href="../css/album.css">

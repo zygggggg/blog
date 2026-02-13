@@ -2,7 +2,7 @@
 body{
     margin: 0;
     padding: 0;
-    background-image: url("../image/fll/system_image/IMG_E5419.jpeg");
+    /* background-image 已通过内联脚本设置，避免闪烁 */
     background-attachment: fixed;
     background-repeat: no-repeat;
     background-size: cover;
