@@ -1,6 +1,4 @@
-// ====== 共享音乐播放器功能 ======
-// 使用 localStorage 实现跨页面音乐播放
-
+// ====== 独立音乐播放器 (用于 iframe) ======
 const audioPlayer = document.getElementById('audioPlayer');
 let currentTrackIndex = 0;
 let isLooping = false;
@@ -22,7 +20,7 @@ function saveMusicState() {
         currentTime: audioPlayer.currentTime,
         isLooping: isLooping,
         isShuffling: isShuffling,
-        playerVisible: player.classList.contains('show') // 保存播放器显示状态
+        playerVisible: player.classList.contains('show')
     };
     localStorage.setItem('musicPlayerState', JSON.stringify(state));
 }
@@ -58,7 +56,6 @@ function restoreMusicState() {
 
             // 恢复播放进度
             if (state.currentTime) {
-                // 等待音频加载后设置时间
                 audioPlayer.addEventListener('loadedmetadata', function setTime() {
                     audioPlayer.currentTime = state.currentTime;
                     audioPlayer.removeEventListener('loadedmetadata', setTime);
@@ -69,7 +66,6 @@ function restoreMusicState() {
 
             // 如果之前在播放，继续播放
             if (state.isPlaying) {
-                // 使用 promise 来确保播放
                 const playPromise = audioPlayer.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
@@ -118,7 +114,7 @@ function initMusicPlayer() {
         document.getElementById('totalTime').textContent = formatMusicTime(audioPlayer.duration);
     });
 
-    // 定期保存播放状态（每秒保存，减少跳转时的进度丢失）
+    // 定期保存播放状态
     setInterval(saveMusicState, 1000);
 
     // 页面卸载前保存状态
@@ -202,7 +198,6 @@ function previousTrack() {
 
 function nextTrack() {
     if (isShuffling) {
-        // 随机选择下一首（不重复当前歌曲）
         let nextIndex;
         do {
             nextIndex = Math.floor(Math.random() * playlist.length);
@@ -218,7 +213,6 @@ function toggleLoop() {
     isLooping = !isLooping;
 
     if (isLooping) {
-        // 开启循环，关闭随机
         isShuffling = false;
     }
 
@@ -231,7 +225,6 @@ function toggleShuffle() {
     isShuffling = !isShuffling;
 
     if (isShuffling) {
-        // 开启随机，关闭循环
         isLooping = false;
     }
 
@@ -271,5 +264,13 @@ function formatMusicTime(seconds) {
 function toggleMusicPlayer() {
     const player = document.getElementById('musicPlayer');
     player.classList.toggle('show');
-    saveMusicState(); // 保存播放器显示状态
+    saveMusicState();
 }
+
+// 页面加载时初始化
+window.addEventListener('DOMContentLoaded', initMusicPlayer);
+
+// 允许父页面控制播放器
+window.toggleMusicPlayerFromParent = function() {
+    toggleMusicPlayer();
+};

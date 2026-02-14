@@ -135,7 +135,7 @@ function renderMessages() {
         const avatarUrl = `../image/homepic${avatarNum}.png`;
 
         // 格式化时间
-        const time = formatTime(message.createTime);
+        const time = formatMessageTime(message.createTime);
 
         messageCard.innerHTML = `
             <div class="message-header">
@@ -155,8 +155,8 @@ function renderMessages() {
     });
 }
 
-// 格式化时间
-function formatTime(timeString) {
+// 格式化留言时间
+function formatMessageTime(timeString) {
     if (!timeString) return '刚刚';
 
     const date = new Date(timeString);
