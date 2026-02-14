@@ -42,7 +42,9 @@
       "WebFetch(domain:wutheringwavesfll.vercel.app)",
       "Bash(python -m http.server:*)",
       "Bash(timeout 2 bash:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(npm create:*)",
+      "Bash(npm run dev)"
     ]
   }
 }
