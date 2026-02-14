@@ -15,12 +15,14 @@ const playlist = [
 
 // 保存音乐状态到 localStorage
 function saveMusicState() {
+    const player = document.getElementById('musicPlayer');
     const state = {
         currentTrackIndex: currentTrackIndex,
         isPlaying: !audioPlayer.paused,
         currentTime: audioPlayer.currentTime,
         isLooping: isLooping,
-        isShuffling: isShuffling
+        isShuffling: isShuffling,
+        playerVisible: player.classList.contains('show') // 保存播放器显示状态
     };
     localStorage.setItem('musicPlayerState', JSON.stringify(state));
 }
@@ -40,6 +42,12 @@ function restoreMusicState() {
         updateLoopButton();
         updateShuffleButton();
 
+        // 恢复播放器显示状态
+        const player = document.getElementById('musicPlayer');
+        if (state.playerVisible) {
+            player.classList.add('show');
+        }
+
         // 加载歌曲
         const track = playlist[currentTrackIndex];
         if (track) {
@@ -50,17 +58,27 @@ function restoreMusicState() {
 
             // 恢复播放进度
             if (state.currentTime) {
-                audioPlayer.currentTime = state.currentTime;
+                // 等待音频加载后设置时间
+                audioPlayer.addEventListener('loadedmetadata', function setTime() {
+                    audioPlayer.currentTime = state.currentTime;
+                    audioPlayer.removeEventListener('loadedmetadata', setTime);
+                }, { once: true });
             }
 
             renderPlaylist();
 
             // 如果之前在播放，继续播放
             if (state.isPlaying) {
-                audioPlayer.play().catch(err => {
-                    console.log('自动播放被阻止:', err);
-                });
-                updatePlayButton(true);
+                // 使用 promise 来确保播放
+                const playPromise = audioPlayer.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        updatePlayButton(true);
+                    }).catch(err => {
+                        console.log('自动播放被阻止:', err);
+                        updatePlayButton(false);
+                    });
+                }
             }
         }
     } catch (e) {
@@ -100,8 +118,8 @@ function initMusicPlayer() {
         document.getElementById('totalTime').textContent = formatTime(audioPlayer.duration);
     });
 
-    // 定期保存播放状态（每3秒）
-    setInterval(saveMusicState, 3000);
+    // 定期保存播放状态（每秒保存，减少跳转时的进度丢失）
+    setInterval(saveMusicState, 1000);
 
     // 页面卸载前保存状态
     window.addEventListener('beforeunload', saveMusicState);
@@ -253,4 +271,5 @@ function formatTime(seconds) {
 function toggleMusicPlayer() {
     const player = document.getElementById('musicPlayer');
     player.classList.toggle('show');
+    saveMusicState(); // 保存播放器显示状态
 }
