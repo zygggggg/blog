@@ -84,37 +84,7 @@ const selectedFile = ref(null)
 
 onMounted(async () => {
   console.log('Album页面加载，开始加载图片...')
-  // 首次加载强制刷新，清除可能损坏的缓存
   await loadImages(true)
-
-  // 调试：检查图片区域
-  setTimeout(() => {
-    const imageCards = document.querySelectorAll('.image-card')
-    console.log('找到的图片卡片数量:', imageCards.length)
-    imageCards.forEach((card, index) => {
-      const rect = card.getBoundingClientRect()
-      const styles = window.getComputedStyle(card)
-      console.log(`图片卡片 ${index}:`, {
-        位置: { top: rect.top, left: rect.left, width: rect.width, height: rect.height },
-        zIndex: styles.zIndex,
-        pointerEvents: styles.pointerEvents,
-        position: styles.position,
-        cursor: styles.cursor
-      })
-    })
-
-    // 检查图片网格
-    const grid = document.querySelector('.image-grid')
-    if (grid) {
-      const gridStyles = window.getComputedStyle(grid)
-      console.log('图片网格样式:', {
-        zIndex: gridStyles.zIndex,
-        pointerEvents: gridStyles.pointerEvents,
-        position: gridStyles.position,
-        display: gridStyles.display
-      })
-    }
-  }, 1000)
 })
 
 async function loadImages(forceRefresh = false) {
