@@ -157,7 +157,15 @@ function renderMessages() {
 
 // 格式化时间
 function formatTime(timeString) {
+    if (!timeString) return '刚刚';
+
     const date = new Date(timeString);
+
+    // 检查日期是否有效
+    if (isNaN(date.getTime()) || date.getTime() === 0) {
+        return '刚刚';
+    }
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
