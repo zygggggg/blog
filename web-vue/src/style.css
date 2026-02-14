@@ -1,0 +1,49 @@
+/* 引入原有的CSS文件 - 必须放在最前面 */
+@import url('/css/nav.css');
+@import url('/css/body.css');
+@import url('/css/homestyle.css');
+@import url('/css/music.css');
+@import url('/css/join.css');
+@import url('/css/album.css');
+@import url('/css/blog.css');
+@import url('/css/about.css');
+
+/* 重置默认样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+#app {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Vue Router 链接样式 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.router-link-active {
+  /* 可以添加激活状态的样式 */
+}
