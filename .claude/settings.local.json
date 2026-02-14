@@ -41,7 +41,8 @@
       "Bash(xargs:*)",
       "WebFetch(domain:wutheringwavesfll.vercel.app)",
       "Bash(python -m http.server:*)",
-      "Bash(timeout 2 bash:*)"
+      "Bash(timeout 2 bash:*)",
+      "Bash(echo:*)"
     ]
   }
 }
