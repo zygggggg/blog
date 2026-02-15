@@ -224,15 +224,7 @@ async function postMessage() {
 }
 
 // 头像列表
-const avatarList = [
-  '/images/fll/avatar/屏幕截图 2026-02-15 141810.png',
-  '/images/fll/avatar/屏幕截图 2026-02-15 141856.png',
-  '/images/fll/avatar/屏幕截图 2026-02-15 141921.png',
-  '/images/fll/avatar/屏幕截图 2026-02-15 141943.png',
-  '/images/fll/avatar/屏幕截图 2026-02-15 141951.png',
-  '/images/fll/avatar/屏幕截图 2026-02-15 142013.png',
-  '/images/fll/avatar/屏幕截图 2026-02-15 142024.png'
-]
+const avatarList = Array.from({length: 7}, (_, i) => `/images/fll/avatar/${i + 1}.png`)
 
 function getAvatar(id) {
   // 基于留言 ID 随机选择头像（保证同一条留言总是显示同一个头像）
@@ -571,8 +563,8 @@ function showToast(message) {
 }
 
 .author-avatar {
-  width: 36px;
-  height: 36px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   border: 2px solid rgba(139, 0, 255, 0.5);
 }
@@ -580,12 +572,12 @@ function showToast(message) {
 .author-name {
   font-weight: 600;
   color: #fff;
-  font-size: 14px;
+  font-size: 18px;
 }
 
 .message-time {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .message-content {
@@ -593,5 +585,6 @@ function showToast(message) {
   line-height: 1.6;
   margin-bottom: 10px;
   word-wrap: break-word;
+  font-size: 16px;
 }
 </style>
