@@ -8,7 +8,10 @@
 
       <div class="messages-section">
         <div class="messages-list">
-          <div v-if="messages.length === 0" class="empty-message">
+          <div v-if="loading" class="loading-message">
+            <p>加载中...</p>
+          </div>
+          <div v-else-if="messages.length === 0" class="empty-message">
             <p>还没有留言，快来抢沙发吧！</p>
           </div>
           <div
@@ -46,27 +49,148 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onActivated, onUnmounted } from 'vue'
 
 const API_BASE_URL = '/api/board'
 
 const messages = ref([])
 const nickname = ref('')
 const content = ref('')
+const loading = ref(true)
 
-onMounted(() => {
-  loadMessages()
+// 缓存配置
+const CACHE_KEY = 'board_messages_cache'
+const CACHE_EXPIRES_AT_KEY = 'board_messages_cache_expires_at'
+const CACHE_TTL_MS = 5 * 60 * 1000 // 5分钟
+
+let lastRefreshTime = 0
+const MIN_REFRESH_INTERVAL_MS = 3000
+
+let focusHandler = null
+let visibilityHandler = null
+
+onMounted(async () => {
+  const hasCache = restoreMessagesFromCache()
+  loading.value = !hasCache
+  await loadMessages({ forceRefresh: true, background: hasCache })
+
+  // 监听页面可见性和焦点变化
+  const handleVisibilityOrFocus = () => {
+    const now = Date.now()
+    if (now - lastRefreshTime >= MIN_REFRESH_INTERVAL_MS) {
+      loadMessages({ forceRefresh: true, background: true })
+    }
+  }
+
+  focusHandler = handleVisibilityOrFocus
+  visibilityHandler = () => {
+    if (document.visibilityState === 'visible') {
+      handleVisibilityOrFocus()
+    }
+  }
+
+  window.addEventListener('focus', focusHandler)
+  document.addEventListener('visibilitychange', visibilityHandler)
 })
 
-async function loadMessages() {
+onUnmounted(() => {
+  if (focusHandler) {
+    window.removeEventListener('focus', focusHandler)
+  }
+  if (visibilityHandler) {
+    document.removeEventListener('visibilitychange', visibilityHandler)
+  }
+})
+
+onActivated(() => {
+  const now = Date.now()
+  if (now - lastRefreshTime >= MIN_REFRESH_INTERVAL_MS) {
+    loadMessages({ forceRefresh: true, background: true })
+  }
+})
+
+// 恢复缓存
+function restoreMessagesFromCache() {
   try {
-    const response = await fetch(`${API_BASE_URL}/list?page=1&size=100`)
+    const cachedData = localStorage.getItem(CACHE_KEY)
+    const expiresRaw = localStorage.getItem(CACHE_EXPIRES_AT_KEY)
+
+    if (!cachedData || !expiresRaw) {
+      return false
+    }
+
+    const expiresAt = Number(expiresRaw)
+    if (!Number.isFinite(expiresAt) || Date.now() > expiresAt) {
+      clearMessagesCache()
+      return false
+    }
+
+    const cachedList = JSON.parse(cachedData)
+    if (!Array.isArray(cachedList)) {
+      clearMessagesCache()
+      return false
+    }
+
+    messages.value = cachedList
+    return true
+  } catch (error) {
+    console.error('Restore cache error:', error)
+    clearMessagesCache()
+    return false
+  }
+}
+
+// 写入缓存
+function writeMessagesCache(list) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify(list))
+  localStorage.setItem(CACHE_EXPIRES_AT_KEY, String(Date.now() + CACHE_TTL_MS))
+}
+
+// 清除缓存
+function clearMessagesCache() {
+  localStorage.removeItem(CACHE_KEY)
+  localStorage.removeItem(CACHE_EXPIRES_AT_KEY)
+}
+
+async function loadMessages({ forceRefresh = false, background = false } = {}) {
+  try {
+    if (!forceRefresh) {
+      const hasCache = restoreMessagesFromCache()
+      if (hasCache) {
+        loading.value = false
+        return
+      }
+    }
+
+    if (!background) {
+      loading.value = true
+    }
+
+    const timestamp = Date.now()
+    const response = await fetch(`${API_BASE_URL}/list?page=1&size=100&_t=${timestamp}`, {
+      cache: 'no-store'
+    })
     const result = await response.json()
+
+    lastRefreshTime = Date.now()
+
     if (result.code === 200) {
-      messages.value = result.data.list
+      const nextList = result.data.list
+      messages.value = nextList
+      writeMessagesCache(nextList)
+    } else if (!background) {
+      messages.value = []
+      clearMessagesCache()
     }
   } catch (error) {
     console.error('Load messages error:', error)
+    if (!background) {
+      clearMessagesCache()
+    }
+  } finally {
+    if (!background) {
+      loading.value = false
+    }
   }
 }
 
@@ -93,7 +217,8 @@ async function postMessage() {
     if (result.code === 200) {
       content.value = ''
       showToast('留言发表成功！')
-      await loadMessages()
+      clearMessagesCache()
+      await loadMessages({ forceRefresh: true, background: false })
     }
   } catch (error) {
     console.error('Post message error:', error)
@@ -111,7 +236,8 @@ async function deleteMessage(id) {
     const result = await response.json()
     if (result.code === 200) {
       showToast('留言已删除')
-      await loadMessages()
+      clearMessagesCache()
+      await loadMessages({ forceRefresh: true, background: false })
     }
   } catch (error) {
     console.error('Delete message error:', error)
@@ -402,7 +528,8 @@ function showToast(message) {
 }
 
 /* 空状态 */
-.empty-message {
+.empty-message,
+.loading-message {
   text-align: center;
   padding: 60px 20px;
   color: rgba(255, 255, 255, 0.6);
