@@ -470,7 +470,7 @@ app.post('/api/chat/message', async (req, res) => {
 // 发表留言
 app.post('/api/board/post', async (req, res) => {
   try {
-    const { nickname, content } = req.body;
+    const { nickname, content, avatar } = req.body;
 
     // 验证
     if (!nickname || !nickname.trim()) {
@@ -493,14 +493,15 @@ app.post('/api/board/post', async (req, res) => {
 
     // 插入数据库
     const [result] = await pool.execute(
-      'INSERT INTO board_messages (nickname, content) VALUES (?, ?)',
-      [nickname.trim(), content.trim()]
+      'INSERT INTO board_messages (nickname, content, avatar) VALUES (?, ?, ?)',
+      [nickname.trim(), content.trim(), avatar || null]
     );
 
     const responseData = {
       id: result.insertId,
       nickname: nickname.trim(),
       content: content.trim(),
+      avatar: avatar || null,
       createTime: new Date().toISOString()
     };
 
