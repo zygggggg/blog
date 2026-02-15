@@ -529,7 +529,7 @@ app.get('/api/board/list', async (req, res) => {
 
     // 查询列表（按时间倒序）
     const [rows] = await pool.query(
-      `SELECT id, nickname, content, create_time as createTime
+      `SELECT id, nickname, content, avatar, create_time as createTime
        FROM board_messages
        WHERE is_deleted = 0
        ORDER BY create_time DESC
