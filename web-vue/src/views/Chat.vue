@@ -22,7 +22,7 @@
           :class="['message', msg.type]"
         >
           <div class="message-avatar">
-            <img :src="msg.type === 'user' ? '/images/homepic3.png' : '/images/homepic1.png'" alt="头像">
+            <img :src="msg.type === 'user' ? userAvatar : '/images/homepic1.png'" alt="头像">
           </div>
           <div class="message-bubble">{{ msg.content }}</div>
         </div>
@@ -52,6 +52,27 @@
         </button>
       </div>
     </div>
+
+    <!-- 头像选择器 -->
+    <div class="avatar-selector">
+      <div class="avatar-selector-title">选择头像</div>
+      <div class="avatar-options">
+        <div
+          :class="['avatar-option', { active: userAvatar === '/images/system_images/drifter_man_1.png' }]"
+          @click="changeAvatar('/images/system_images/drifter_man_1.png')"
+        >
+          <img src="/images/system_images/drifter_man_1.png" alt="男漂">
+          <span>男漂</span>
+        </div>
+        <div
+          :class="['avatar-option', { active: userAvatar === '/images/system_images/drifter_woman_2.png' }]"
+          @click="changeAvatar('/images/system_images/drifter_woman_2.png')"
+        >
+          <img src="/images/system_images/drifter_woman_2.png" alt="女漂">
+          <span>女漂</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -67,6 +88,7 @@ const messages = ref([])
 const inputMessage = ref('')
 const messagesContainer = ref(null)
 const isWaiting = ref(false)
+const userAvatar = ref('/images/system_images/drifter_man_1.png') // 默认男漂
 
 onMounted(() => {
   // 从 localStorage 加载历史消息
@@ -74,7 +96,19 @@ onMounted(() => {
   if (savedMessages) {
     messages.value = JSON.parse(savedMessages)
   }
+
+  // 从 localStorage 加载用户头像设置
+  const savedAvatar = localStorage.getItem('chatUserAvatar')
+  if (savedAvatar) {
+    userAvatar.value = savedAvatar
+  }
 })
+
+// 切换头像
+function changeAvatar(avatarPath) {
+  userAvatar.value = avatarPath
+  localStorage.setItem('chatUserAvatar', avatarPath)
+}
 
 async function sendMessage() {
   if (!inputMessage.value.trim()) return
@@ -442,6 +476,108 @@ function scrollToBottom() {
   .message-avatar {
     width: 35px;
     height: 35px;
+  }
+}
+
+/* 头像选择器 */
+.avatar-selector {
+  position: fixed;
+  right: 30px;
+  top: 120px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  width: 200px;
+}
+
+.avatar-selector-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.avatar-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.avatar-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
+}
+
+.avatar-option:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option.active {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.avatar-option img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option.active img {
+  border-color: rgba(102, 126, 234, 0.6);
+}
+
+.avatar-option span {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+}
+
+.avatar-option.active span {
+  color: rgba(102, 126, 234, 1);
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .avatar-selector {
+    right: 10px;
+    top: 100px;
+    width: 160px;
+    padding: 15px;
+  }
+
+  .avatar-selector-title {
+    font-size: 14px;
+  }
+
+  .avatar-option {
+    padding: 10px;
+  }
+
+  .avatar-option img {
+    width: 35px;
+    height: 35px;
+  }
+
+  .avatar-option span {
+    font-size: 14px;
   }
 }
 </style>
