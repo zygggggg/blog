@@ -3,9 +3,6 @@
     <!-- 漂浮粒子 -->
     <div id="particles"></div>
 
-    <!-- 音符装饰 -->
-    <div id="notes"></div>
-
     <main class="main">
       <section class="sec home-hero">
         <div class="hero-content">
@@ -83,7 +80,6 @@ const wasMusicPlayerOpen = ref(false)
 
 onMounted(() => {
   createParticles()
-  createNotes()
 })
 
 function createParticles() {
@@ -98,21 +94,6 @@ function createParticles() {
     particle.style.animationDelay = Math.random() * 10 + 's'
     particle.style.animationDuration = (8 + Math.random() * 4) + 's'
     container.appendChild(particle)
-  }
-}
-
-function createNotes() {
-  const container = document.getElementById('notes')
-  if (!container) return
-
-  const notes = ['♪', '♫', '♬']
-  for (let i = 0; i < 10; i++) {
-    const note = document.createElement('div')
-    note.className = 'note'
-    note.textContent = notes[Math.floor(Math.random() * notes.length)]
-    note.style.left = Math.random() * 100 + '%'
-    note.style.animationDelay = Math.random() * 5 + 's'
-    container.appendChild(note)
   }
 }
 

@@ -27,9 +27,6 @@
               <span class="message-time">{{ formatTime(message.createTime) }}</span>
             </div>
             <div class="message-content">{{ message.content }}</div>
-            <div class="message-actions">
-              <button class="delete-btn" @click="deleteMessage(message.id)">🗑️ 删除</button>
-            </div>
           </div>
         </div>
       </div>
@@ -223,24 +220,6 @@ async function postMessage() {
   } catch (error) {
     console.error('Post message error:', error)
     alert('发表失败')
-  }
-}
-
-async function deleteMessage(id) {
-  if (!confirm('确定要删除这条留言吗？')) return
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/delete/${id}`, {
-      method: 'DELETE'
-    })
-    const result = await response.json()
-    if (result.code === 200) {
-      showToast('留言已删除')
-      clearMessagesCache()
-      await loadMessages({ forceRefresh: true, background: false })
-    }
-  } catch (error) {
-    console.error('Delete message error:', error)
   }
 }
 
@@ -602,28 +581,5 @@ function showToast(message) {
   line-height: 1.6;
   margin-bottom: 10px;
   word-wrap: break-word;
-}
-
-.message-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.delete-btn {
-  background: rgba(255, 0, 0, 0.2);
-  border: 1px solid rgba(255, 0, 0, 0.3);
-  color: rgba(255, 255, 255, 0.8);
-  padding: 6px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.3s;
-}
-
-.delete-btn:hover {
-  background: rgba(255, 0, 0, 0.4);
-  border-color: rgba(255, 0, 0, 0.6);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
 }
 </style>
