@@ -246,7 +246,7 @@ function moveAwayFromMouse(index, event) {
   const distance = Math.sqrt(dx * dx + dy * dy)
 
   // 鼠标靠近时加速逃离
-  const force = 15
+  const force = 5
   avatar.vx = (dx / distance) * force
   avatar.vy = (dy / distance) * force
 
@@ -256,7 +256,7 @@ function moveAwayFromMouse(index, event) {
       avatar.vx = (Math.random() - 0.5) * 4
       avatar.vy = (Math.random() - 0.5) * 4
     }
-  }, 500)
+  }, 400)
 }
 </script>
 
