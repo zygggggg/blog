@@ -138,6 +138,65 @@ const errorResponse = (message = 'error', code = 500) => ({
   data: null
 });
 
+const OSS_NOT_FOUND_CODES = new Set(['NoSuchKey', 'NotFound', 'NoSuchObject', '404']);
+
+function isOssNotFoundError(error) {
+  if (!error) {
+    return false;
+  }
+  const code = error.code ? String(error.code) : '';
+  const status = error.status ? String(error.status) : '';
+  return OSS_NOT_FOUND_CODES.has(code) || status === '404';
+}
+
+async function cleanupMissingOssImagesInDb() {
+  if (!USE_OSS || !ossClient) {
+    return 0;
+  }
+
+  const [activeRows] = await pool.execute(
+    'SELECT id, file_name FROM album_image WHERE is_deleted = 0'
+  );
+
+  if (!activeRows || activeRows.length === 0) {
+    return 0;
+  }
+
+  const missingIds = [];
+
+  for (const row of activeRows) {
+    const fileName = row.file_name;
+    if (!fileName) {
+      missingIds.push(row.id);
+      continue;
+    }
+
+    try {
+      await ossClient.head(fileName);
+    } catch (err) {
+      if (isOssNotFoundError(err)) {
+        missingIds.push(row.id);
+      } else {
+        console.warn(`⚠️ OSS head check failed for ${fileName}:`, err.message);
+      }
+    }
+  }
+
+  if (missingIds.length === 0) {
+    return 0;
+  }
+
+  const placeholders = missingIds.map(() => '?').join(', ');
+  await pool.execute(
+    `UPDATE album_image
+     SET is_deleted = 1, update_time = NOW()
+     WHERE id IN (${placeholders})`,
+    missingIds
+  );
+
+  return missingIds.length;
+}
+
 // ==================== API 路由 ====================
 
 // 健康检查
@@ -257,12 +316,18 @@ app.post('/api/album/upload', upload.single('file'), async (req, res) => {
 // 获取图片列表（分页）
 app.get('/api/album/list', async (req, res) => {
   try {
-    console.log('hello');
-    const page = parseInt(req.query.page) || 1;
-    const size = parseInt(req.query.size) || 20;
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const size = Math.max(1, Math.min(parseInt(req.query.size) || 20, 200));
     const offset = (page - 1) * size;
 
     console.log(`📋 Get image list request received, page: ${page}, size: ${size}`);
+
+    if (USE_OSS) {
+      const cleanedCount = await cleanupMissingOssImagesInDb();
+      if (cleanedCount > 0) {
+        console.log(`🧹 Auto-cleaned ${cleanedCount} records missing in OSS`);
+      }
+    }
 
     // 查询总数
     const [countResult] = await pool.execute(

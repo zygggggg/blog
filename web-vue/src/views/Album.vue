@@ -62,14 +62,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount, onActivated } from 'vue'
 
 const API_BASE_URL = '/api/album'
 
-// 缓存配置
-const CACHE_KEY = 'album_images_cache'
-const CACHE_EXPIRY_KEY = 'album_images_cache_expiry'
-const CACHE_DURATION = 30 * 60 * 1000 // 30分钟缓存
+const REQUEST_SIZE = 100
+const MIN_REFRESH_INTERVAL = 3000
 
 const images = ref([])
 const loading = ref(true)
@@ -81,43 +79,70 @@ const uploading = ref(false)
 const uploadMessage = ref('')
 const uploadStatus = ref('')
 const selectedFile = ref(null)
+let lastRefreshAt = 0
 
 onMounted(async () => {
   console.log('Album页面加载，开始加载图片...')
   await loadImages(true)
+  window.addEventListener('focus', handleWindowFocus)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
+
+onActivated(() => {
+  loadImages(true)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('focus', handleWindowFocus)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+})
+
+function handleWindowFocus() {
+  refreshIfNeeded()
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    refreshIfNeeded()
+  }
+}
+
+function refreshIfNeeded() {
+  const now = Date.now()
+  if (now - lastRefreshAt < MIN_REFRESH_INTERVAL) {
+    return
+  }
+  loadImages(true)
+}
 
 async function loadImages(forceRefresh = false) {
   try {
-    // 检查缓存（除非强制刷新）
-    if (!forceRefresh) {
-      const cachedData = localStorage.getItem(CACHE_KEY)
-      const cacheExpiry = localStorage.getItem(CACHE_EXPIRY_KEY)
-      const now = Date.now()
-
-      if (cachedData && cacheExpiry && now < parseInt(cacheExpiry)) {
-        console.log('✅ 使用缓存的相册图片列表')
-        const cachedResult = JSON.parse(cachedData)
-        images.value = cachedResult.list
-        loading.value = false
-        return
-      }
+    if (forceRefresh) {
+      loading.value = true
     }
 
     console.log('📡 正在从 API 获取相册图片列表...')
-    const response = await fetch(`${API_BASE_URL}/list?page=1&size=100`)
+    const requestUrl = `${API_BASE_URL}/list?page=1&size=${REQUEST_SIZE}&_t=${Date.now()}`
+    const response = await fetch(requestUrl, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache'
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`)
+    }
+
     const result = await response.json()
+    lastRefreshAt = Date.now()
 
     console.log('API返回结果:', result)
 
     if (result.code === 200) {
       console.log('✅ 成功加载相册图片列表')
       console.log('图片列表数据:', result.data)
-
-      // 缓存数据
-      const now = Date.now()
-      localStorage.setItem(CACHE_KEY, JSON.stringify(result.data))
-      localStorage.setItem(CACHE_EXPIRY_KEY, (now + CACHE_DURATION).toString())
 
       // 按上传时间倒序排列（新的在前面）
       if (result.data.list && Array.isArray(result.data.list)) {
@@ -213,9 +238,6 @@ async function confirmUpload() {
       // 延迟关闭并刷新
       setTimeout(() => {
         cancelUpload()
-        // 清除缓存
-        localStorage.removeItem(CACHE_KEY)
-        localStorage.removeItem(CACHE_EXPIRY_KEY)
         // 重新加载图片列表
         loadImages(true)
       }, 1000)
