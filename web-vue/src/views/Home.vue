@@ -97,12 +97,27 @@ const isWallpaperMode = ref(false)
 const wasMusicPlayerOpen = ref(false)
 const showFloatingAvatars = ref(false)
 const floatingAvatars = ref([
-  { src: '/images/homepic1.png', x: 200, y: 200, vx: 2, vy: 1.5 },
-  { src: '/images/homepic2.png', x: 600, y: 400, vx: -1.5, vy: 2 },
-  { src: '/images/homepic3.png', x: 400, y: 100, vx: 1, vy: -2 }
+  { src: '', x: 200, y: 200, vx: 2, vy: 1.5 },
+  { src: '', x: 600, y: 400, vx: -1.5, vy: 2 },
+  { src: '', x: 400, y: 100, vx: 1, vy: -2 }
 ])
 
 let animationId = null
+
+// 获取随机头像路径
+function getRandomAvatars() {
+  const availableIndices = [1, 2, 3, 4, 5, 6, 7]
+  const selected = []
+
+  // 随机选择3个不重复的头像
+  for (let i = 0; i < 3; i++) {
+    const randomIndex = Math.floor(Math.random() * availableIndices.length)
+    const avatarNumber = availableIndices.splice(randomIndex, 1)[0]
+    selected.push(`/images/fll/avatar/${avatarNumber}.png`)
+  }
+
+  return selected
+}
 
 onMounted(() => {
   createParticles()
@@ -155,6 +170,13 @@ function toggleWallpaperView() {
     if (!musicStore.isPlaying) {
       musicStore.loadTrack(0) // 加载并播放第一首
     }
+
+    // 随机选择头像并初始化位置
+    const randomAvatarPaths = getRandomAvatars()
+    floatingAvatars.value.forEach((avatar, index) => {
+      avatar.src = randomAvatarPaths[index]
+    })
+    initFloatingAvatars()
 
     // 显示漂浮头像
     showFloatingAvatars.value = true
