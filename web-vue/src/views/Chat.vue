@@ -56,7 +56,7 @@
     <!-- 头像选择器 -->
     <div class="avatar-selector">
       <div class="avatar-selector-section">
-        <div class="avatar-selector-title">用户头像</div>
+        <div class="avatar-selector-title">端水大师</div>
         <div class="avatar-options">
           <div
             :class="['avatar-option', { active: userAvatar === '/images/system_images/drifter_man_1.png' }]"
@@ -78,12 +78,19 @@
       <div class="avatar-selector-divider"></div>
 
       <div class="avatar-selector-section">
-        <div class="avatar-selector-title">助手头像</div>
+        <div class="avatar-selector-title">糯糯头像</div>
         <div class="avatar-options avatar-options-grid">
+          <div
+            :class="['avatar-option avatar-option-small', { active: aiAvatarIndex === -1 }]"
+            @click="changeAvatar('random', 'ai')"
+            title="随机头像"
+          >
+            <div class="random-avatar-small">🎲</div>
+          </div>
           <div
             v-for="i in 7"
             :key="i"
-            :class="['avatar-option avatar-option-small', { active: aiAvatar === `/images/fll/avatar/${i}.png` }]"
+            :class="['avatar-option avatar-option-small', { active: aiAvatarIndex === i }]"
             @click="changeAvatar(`/images/fll/avatar/${i}.png`, 'ai')"
             :title="`糯糯${i}`"
           >
@@ -109,6 +116,7 @@ const messagesContainer = ref(null)
 const isWaiting = ref(false)
 const userAvatar = ref('/images/system_images/drifter_man_1.png') // 默认男漂
 const aiAvatar = ref('/images/fll/avatar/1.png') // 默认糯糯1
+const aiAvatarIndex = ref(1) // AI 头像索引，-1 表示随机
 
 onMounted(() => {
   // 从 localStorage 加载历史消息
@@ -125,8 +133,16 @@ onMounted(() => {
 
   // 从 localStorage 加载 AI 头像设置
   const savedAiAvatar = localStorage.getItem('chatAiAvatar')
-  if (savedAiAvatar) {
-    aiAvatar.value = savedAiAvatar
+  const savedAiAvatarIndex = localStorage.getItem('chatAiAvatarIndex')
+  if (savedAiAvatarIndex !== null) {
+    aiAvatarIndex.value = parseInt(savedAiAvatarIndex)
+    if (aiAvatarIndex.value === -1) {
+      // 随机模式
+      const randomIndex = Math.floor(Math.random() * 7) + 1
+      aiAvatar.value = `/images/fll/avatar/${randomIndex}.png`
+    } else if (savedAiAvatar) {
+      aiAvatar.value = savedAiAvatar
+    }
   }
 })
 
@@ -136,8 +152,23 @@ function changeAvatar(avatarPath, type) {
     userAvatar.value = avatarPath
     localStorage.setItem('chatUserAvatar', avatarPath)
   } else if (type === 'ai') {
-    aiAvatar.value = avatarPath
-    localStorage.setItem('chatAiAvatar', avatarPath)
+    if (avatarPath === 'random') {
+      // 随机模式
+      aiAvatarIndex.value = -1
+      const randomIndex = Math.floor(Math.random() * 7) + 1
+      aiAvatar.value = `/images/fll/avatar/${randomIndex}.png`
+      localStorage.setItem('chatAiAvatarIndex', -1)
+      localStorage.setItem('chatAiAvatar', aiAvatar.value)
+    } else {
+      // 指定头像
+      const match = avatarPath.match(/\/(\d+)\.png/)
+      if (match) {
+        aiAvatarIndex.value = parseInt(match[1])
+        localStorage.setItem('chatAiAvatarIndex', aiAvatarIndex.value)
+      }
+      aiAvatar.value = avatarPath
+      localStorage.setItem('chatAiAvatar', avatarPath)
+    }
   }
 }
 
