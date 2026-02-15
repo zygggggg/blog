@@ -288,7 +288,7 @@ function showToast(message) {
 
 #nicknameInput:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 0 3px rgba(139, 0, 255, 0.3),
               0 4px 12px rgba(139, 0, 255, 0.2);
   border-color: rgba(139, 0, 255, 0.6);
