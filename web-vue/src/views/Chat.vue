@@ -3,7 +3,7 @@
     <div class="chat-container">
       <div class="chat-header">
         <div class="chat-avatar">
-          <img src="/images/homepic1.png" alt="角色头像">
+          <img :src="aiAvatar" alt="角色头像">
         </div>
         <div class="chat-info">
           <h2>WZY 助手</h2>
@@ -22,13 +22,13 @@
           :class="['message', msg.type]"
         >
           <div class="message-avatar">
-            <img :src="msg.type === 'user' ? userAvatar : '/images/homepic1.png'" alt="头像">
+            <img :src="msg.type === 'user' ? userAvatar : aiAvatar" alt="头像">
           </div>
           <div class="message-bubble">{{ msg.content }}</div>
         </div>
         <div v-if="isWaiting" class="message ai">
           <div class="message-avatar">
-            <img src="/images/homepic1.png" alt="头像">
+            <img :src="aiAvatar" alt="头像">
           </div>
           <div class="message-bubble typing-indicator">
             <span></span>
@@ -55,21 +55,40 @@
 
     <!-- 头像选择器 -->
     <div class="avatar-selector">
-      <div class="avatar-selector-title">选择头像</div>
-      <div class="avatar-options">
-        <div
-          :class="['avatar-option', { active: userAvatar === '/images/system_images/drifter_man_1.png' }]"
-          @click="changeAvatar('/images/system_images/drifter_man_1.png')"
-        >
-          <img src="/images/system_images/drifter_man_1.png" alt="男漂">
-          <span>男漂</span>
+      <div class="avatar-selector-section">
+        <div class="avatar-selector-title">用户头像</div>
+        <div class="avatar-options">
+          <div
+            :class="['avatar-option', { active: userAvatar === '/images/system_images/drifter_man_1.png' }]"
+            @click="changeAvatar('/images/system_images/drifter_man_1.png', 'user')"
+          >
+            <img src="/images/system_images/drifter_man_1.png" alt="男漂">
+            <span>男漂</span>
+          </div>
+          <div
+            :class="['avatar-option', { active: userAvatar === '/images/system_images/drifter_woman_2.png' }]"
+            @click="changeAvatar('/images/system_images/drifter_woman_2.png', 'user')"
+          >
+            <img src="/images/system_images/drifter_woman_2.png" alt="女漂">
+            <span>女漂</span>
+          </div>
         </div>
-        <div
-          :class="['avatar-option', { active: userAvatar === '/images/system_images/drifter_woman_2.png' }]"
-          @click="changeAvatar('/images/system_images/drifter_woman_2.png')"
-        >
-          <img src="/images/system_images/drifter_woman_2.png" alt="女漂">
-          <span>女漂</span>
+      </div>
+
+      <div class="avatar-selector-divider"></div>
+
+      <div class="avatar-selector-section">
+        <div class="avatar-selector-title">助手头像</div>
+        <div class="avatar-options avatar-options-grid">
+          <div
+            v-for="i in 7"
+            :key="i"
+            :class="['avatar-option avatar-option-small', { active: aiAvatar === `/images/fll/avatar/${i}.png` }]"
+            @click="changeAvatar(`/images/fll/avatar/${i}.png`, 'ai')"
+            :title="`糯糯${i}`"
+          >
+            <img :src="`/images/fll/avatar/${i}.png`" :alt="`糯糯${i}`">
+          </div>
         </div>
       </div>
     </div>
@@ -89,6 +108,7 @@ const inputMessage = ref('')
 const messagesContainer = ref(null)
 const isWaiting = ref(false)
 const userAvatar = ref('/images/system_images/drifter_man_1.png') // 默认男漂
+const aiAvatar = ref('/images/fll/avatar/1.png') // 默认糯糯1
 
 onMounted(() => {
   // 从 localStorage 加载历史消息
@@ -102,12 +122,23 @@ onMounted(() => {
   if (savedAvatar) {
     userAvatar.value = savedAvatar
   }
+
+  // 从 localStorage 加载 AI 头像设置
+  const savedAiAvatar = localStorage.getItem('chatAiAvatar')
+  if (savedAiAvatar) {
+    aiAvatar.value = savedAiAvatar
+  }
 })
 
 // 切换头像
-function changeAvatar(avatarPath) {
-  userAvatar.value = avatarPath
-  localStorage.setItem('chatUserAvatar', avatarPath)
+function changeAvatar(avatarPath, type) {
+  if (type === 'user') {
+    userAvatar.value = avatarPath
+    localStorage.setItem('chatUserAvatar', avatarPath)
+  } else if (type === 'ai') {
+    aiAvatar.value = avatarPath
+    localStorage.setItem('chatAiAvatar', avatarPath)
+  }
 }
 
 async function sendMessage() {
@@ -239,8 +270,8 @@ function scrollToBottom() {
 }
 
 .chat-avatar {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   overflow: hidden;
   border: 3px solid white;
@@ -320,8 +351,8 @@ function scrollToBottom() {
 }
 
 .message-avatar {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -474,8 +505,8 @@ function scrollToBottom() {
   }
 
   .message-avatar {
-    width: 35px;
-    height: 35px;
+    width: 50px;
+    height: 50px;
   }
 }
 
@@ -490,14 +521,26 @@ function scrollToBottom() {
   padding: 20px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
   z-index: 100;
-  width: 200px;
+  width: 240px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+
+.avatar-selector-section {
+  margin-bottom: 0;
+}
+
+.avatar-selector-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+  margin: 20px 0;
 }
 
 .avatar-selector-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #333;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
@@ -505,6 +548,12 @@ function scrollToBottom() {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.avatar-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
 .avatar-option {
@@ -550,6 +599,20 @@ function scrollToBottom() {
   color: #333;
 }
 
+.avatar-option-small {
+  padding: 6px;
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-option-small img {
+  width: 50px;
+  height: 50px;
+  margin: 0;
+}
+
 .avatar-option.active span {
   color: rgba(102, 126, 234, 1);
   font-weight: 600;
@@ -559,7 +622,7 @@ function scrollToBottom() {
   .avatar-selector {
     right: 10px;
     top: 100px;
-    width: 160px;
+    width: 200px;
     padding: 15px;
   }
 
@@ -578,6 +641,16 @@ function scrollToBottom() {
 
   .avatar-option span {
     font-size: 14px;
+  }
+
+  .avatar-option-small img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .avatar-options-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }
 </style>
