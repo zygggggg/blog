@@ -16,6 +16,7 @@
           height: '80px'
         }"
         class="floating-avatar"
+        @mousemove="moveAwayFromMouse(index, $event)"
         @mouseenter="moveAwayFromMouse(index, $event)"
       />
     </div>
@@ -244,18 +245,18 @@ function moveAwayFromMouse(index, event) {
   const dy = centerY - mouseY
   const distance = Math.sqrt(dx * dx + dy * dy)
 
-  if (distance < 100) { // 如果鼠标靠近
-    // 加速远离
-    const force = 10
-    avatar.vx = (dx / distance) * force
-    avatar.vy = (dy / distance) * force
+  // 鼠标靠近时加速逃离
+  const force = 15
+  avatar.vx = (dx / distance) * force
+  avatar.vy = (dy / distance) * force
 
-    // 随机一个新的目标位置
-    setTimeout(() => {
+  // 500ms 后恢复随机飘动
+  setTimeout(() => {
+    if (showFloatingAvatars.value) {
       avatar.vx = (Math.random() - 0.5) * 4
       avatar.vy = (Math.random() - 0.5) * 4
-    }, 500)
-  }
+    }
+  }, 500)
 }
 </script>
 
@@ -284,7 +285,7 @@ function moveAwayFromMouse(index, event) {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 5;
+  z-index: 100;
 }
 
 /* 漂浮头像 */
