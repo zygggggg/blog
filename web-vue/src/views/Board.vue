@@ -21,7 +21,7 @@
           >
             <div class="message-header">
               <div class="message-author">
-                <img :src="getAvatar(message.id)" alt="avatar" class="author-avatar" />
+                <img :src="message.avatar || getAvatar(message.id)" alt="avatar" class="author-avatar" />
                 <span class="author-name">{{ message.nickname }}</span>
               </div>
               <span class="message-time">{{ formatTime(message.createTime) }}</span>
@@ -34,11 +34,37 @@
 
     <div class="post-message-section">
       <div class="post-form">
+        <div class="user-avatar-preview">
+          <img :src="userAvatar" alt="你的头像" class="preview-avatar" />
+        </div>
         <input v-model="nickname" type="text" id="nicknameInput" placeholder="你的昵称" maxlength="20">
         <textarea v-model="content" id="messageInput" placeholder="写下你的留言..." maxlength="500"></textarea>
         <div class="post-actions">
           <span class="char-count">{{ content.length }}/500</span>
           <button class="post-btn" @click="postMessage">发送</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 头像选择器 -->
+    <div class="avatar-selector">
+      <div class="avatar-selector-title">糯糯头像</div>
+      <div class="avatar-options">
+        <div
+          :class="['avatar-option', { active: userAvatarIndex === -1 }]"
+          @click="selectAvatar(-1)"
+          title="随机头像"
+        >
+          <div class="random-avatar">🎲</div>
+          <span>随机</span>
+        </div>
+        <div
+          v-for="i in 7"
+          :key="i"
+          :class="['avatar-option', { active: userAvatarIndex === i }]"
+          @click="selectAvatar(i)"
+        >
+          <img :src="`/images/fll/avatar/${i}.png`" :alt="`糯糯${i}`">
         </div>
       </div>
     </div>
@@ -54,6 +80,8 @@ const messages = ref([])
 const nickname = ref('')
 const content = ref('')
 const loading = ref(true)
+const userAvatarIndex = ref(1) // 默认第一个头像，-1 表示随机
+const userAvatar = ref('/images/fll/avatar/1.png')
 
 // 缓存配置
 const CACHE_KEY = 'board_messages_cache'
@@ -70,6 +98,13 @@ onMounted(async () => {
   const hasCache = restoreMessagesFromCache()
   loading.value = !hasCache
   await loadMessages({ forceRefresh: true, background: hasCache })
+
+  // 加载用户头像设置
+  const savedAvatarIndex = localStorage.getItem('boardUserAvatarIndex')
+  if (savedAvatarIndex !== null) {
+    userAvatarIndex.value = parseInt(savedAvatarIndex)
+    updateUserAvatar()
+  }
 
   // 监听页面可见性和焦点变化
   const handleVisibilityOrFocus = () => {
@@ -207,7 +242,8 @@ async function postMessage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         nickname: nickname.value,
-        content: content.value
+        content: content.value,
+        avatar: userAvatar.value
       })
     })
     const result = await response.json()
@@ -220,6 +256,38 @@ async function postMessage() {
   } catch (error) {
     console.error('Post message error:', error)
     alert('发表失败')
+  }
+}
+
+// 选择头像
+function selectAvatar(index) {
+  userAvatarIndex.value = index
+  localStorage.setItem('boardUserAvatarIndex', index)
+
+  if (index === -1) {
+    // 随机模式：立即生成一个固定的随机头像
+    const randomIndex = Math.floor(Math.random() * 7) + 1
+    userAvatar.value = `/images/fll/avatar/${randomIndex}.png`
+    localStorage.setItem('boardUserAvatar', userAvatar.value)
+  } else {
+    // 指定头像
+    userAvatar.value = `/images/fll/avatar/${index}.png`
+    localStorage.setItem('boardUserAvatar', userAvatar.value)
+  }
+}
+
+// 更新用户头像（从localStorage恢复）
+function updateUserAvatar() {
+  const savedAvatar = localStorage.getItem('boardUserAvatar')
+  if (savedAvatar) {
+    userAvatar.value = savedAvatar
+  } else if (userAvatarIndex.value === -1) {
+    // 随机模式但没有保存的头像，生成一个
+    const randomIndex = Math.floor(Math.random() * 7) + 1
+    userAvatar.value = `/images/fll/avatar/${randomIndex}.png`
+    localStorage.setItem('boardUserAvatar', userAvatar.value)
+  } else {
+    userAvatar.value = `/images/fll/avatar/${userAvatarIndex.value}.png`
   }
 }
 
@@ -591,5 +659,114 @@ function showToast(message) {
   margin-bottom: 10px;
   word-wrap: break-word;
   font-size: 16px;
+}
+
+/* 用户头像预览 */
+.user-avatar-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 0, 255, 0.5);
+  object-fit: cover;
+}
+
+/* 头像选择器 */
+.avatar-selector {
+  position: fixed;
+  left: 30px;
+  bottom: 200px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+  z-index: 998;
+  width: fit-content;
+  max-width: 400px;
+}
+
+.avatar-selector-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.avatar-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.avatar-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid transparent;
+}
+
+.avatar-option:hover {
+  background: rgba(255, 255, 255, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option.active {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.6);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.avatar-option img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option.active img {
+  border-color: rgba(102, 126, 234, 0.6);
+}
+
+.avatar-option span {
+  font-size: 12px;
+  color: #333;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.avatar-option.active span {
+  color: rgba(102, 126, 234, 1);
+  font-weight: 600;
+}
+
+.random-avatar {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.avatar-option.active .random-avatar {
+  border-color: rgba(102, 126, 234, 0.6);
 }
 </style>
