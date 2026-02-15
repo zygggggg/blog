@@ -223,9 +223,21 @@ async function postMessage() {
   }
 }
 
+// 头像列表
+const avatarList = [
+  '/images/fll/avatar/屏幕截图 2026-02-15 141810.png',
+  '/images/fll/avatar/屏幕截图 2026-02-15 141856.png',
+  '/images/fll/avatar/屏幕截图 2026-02-15 141921.png',
+  '/images/fll/avatar/屏幕截图 2026-02-15 141943.png',
+  '/images/fll/avatar/屏幕截图 2026-02-15 141951.png',
+  '/images/fll/avatar/屏幕截图 2026-02-15 142013.png',
+  '/images/fll/avatar/屏幕截图 2026-02-15 142024.png'
+]
+
 function getAvatar(id) {
-  const avatarNum = (id % 4) + 1
-  return `/images/homepic${avatarNum}.png`
+  // 基于留言 ID 随机选择头像（保证同一条留言总是显示同一个头像）
+  const avatarIndex = id % avatarList.length
+  return avatarList[avatarIndex]
 }
 
 function formatTime(timeString) {
